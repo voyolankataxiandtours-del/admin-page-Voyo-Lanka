@@ -182,7 +182,7 @@ window.uploadImage = async function () {
 
   imageURL = data.secure_url;
 
-  status.innerText = "Uploaded ✔";
+ document.getElementById("status").innerText = "Uploaded ✔";
   previewImg.src = imageURL;
   previewImg.classList.remove("hidden");
   noPreview.style.display = "none";
