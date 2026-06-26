@@ -110,6 +110,12 @@ body {
 
 <script type="module">
 
+  window.history.pushState(null, "", window.location.href);
+
+window.addEventListener("popstate", () => {
+  window.location.replace("./index.html");
+});
+
   onAuthStateChanged(auth, (user) => {
   if (!user) {
     // stops back button restore
