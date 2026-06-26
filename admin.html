@@ -117,12 +117,19 @@ body {
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getFirestore, collection, addDoc, getDocs,
-  deleteDoc, doc, updateDoc
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
-  getAuth, signOut, onAuthStateChanged
+  getAuth,
+  signOut,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const app = initializeApp({
@@ -136,108 +143,119 @@ const auth = getAuth(app);
 
 let imageURL = "";
 
-/* AUTH */
-onAuthStateChanged(auth, user => {
+/* SAFE SELECTOR */
+const $ = (id) => document.getElementById(id);
+
+/* AUTH GUARD */
+onAuthStateChanged(auth, (user) => {
   if (!user) location.replace("index.html");
 });
 
-/* BACK BLOCK */
+/* BACK BUTTON LOCK */
 history.pushState(null, "", location.href);
 onpopstate = () => location.replace("index.html");
 
+/* TOAST */
+function toast(msg) {
+  const t = $("status");
+  if (t) t.innerText = msg;
+}
+
 /* RESET FORM */
 window.newTour = () => {
-  docId.value = "";
-  title.value = "";
-  description.value = "";
-  slug.value = "";
-  category.value = "Day Tour";
+  $("docId").value = "";
+  $("title").value = "";
+  $("description").value = "";
+  $("slug").value = "";
+  $("category").value = "Day Tour";
 
   imageURL = "";
-  status.innerText = "";
 
-  previewImg.classList.add("hidden");
-  noPreview.style.display = "block";
+  $("status").innerText = "";
+
+  $("previewImg").classList.add("hidden");
+  $("noPreview").style.display = "block";
 };
 
-/* CLOUDINARY */
+/* CLOUDINARY UPLOAD */
 window.uploadImage = async () => {
-  const file = imageFile.files[0];
+  const file = $("imageFile").files[0];
   if (!file) return alert("Select image first");
 
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", "tour_upload");
 
-  const res = await fetch(
-    "https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
-    { method: "POST", body: formData }
-  );
+  try {
+    const res = await fetch(
+      "https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
+      { method: "POST", body: formData }
+    );
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (!data.secure_url) return alert("Upload failed");
+    if (!data.secure_url) {
+      alert("Upload failed");
+      return;
+    }
 
-  imageURL = data.secure_url;
+    imageURL = data.secure_url;
 
-  status.innerText = "Uploaded ✔";
-  previewImg.src = imageURL;
-  previewImg.classList.remove("hidden");
-  noPreview.style.display = "none";
+    $("status").innerText = "Uploaded ✔";
+    $("previewImg").src = imageURL;
+    $("previewImg").classList.remove("hidden");
+    $("noPreview").style.display = "none";
+
+  } catch (err) {
+    alert("Upload error");
+  }
 };
 
-/* SAVE */
+/* SAVE TOUR (FIXED) */
 window.saveTour = async () => {
-
-  if (!title.value || !description.value) {
-    alert("Fill required fields");
-    return;
-  }
-
   const data = {
-    title: title.value,
-    description: description.value,
-    category: category.value,
-    slug: slug.value,
+    title: $("title").value,
+    description: $("description").value,
+    category: $("category").value,
+    slug: $("slug").value,
     image: imageURL
   };
 
-  if (docId.value) {
-    await updateDoc(doc(db,"tour",docId.value),data);
-  } else {
-    await addDoc(collection(db,"tour"),data);
-  }
+  const id = $("docId").value;
 
-  newTour();
-  loadTours();
+  try {
+    if (id) {
+      // SAFE UPDATE (no crash if missing)
+      await setDoc(doc(db, "tour", id), data, { merge: true });
+    } else {
+      await addDoc(collection(db, "tour"), data);
+    }
+
+    newTour();
+    loadTours();
+
+  } catch (e) {
+    console.error(e);
+    alert("Save failed");
+  }
 };
 
-/* LOAD */
-async function loadTours(){
-  list.innerHTML="";
-  const snap=await getDocs(collection(db,"tour"));
+/* LOAD TOURS */
+async function loadTours() {
+  const list = $("list");
+  list.innerHTML = "";
 
-  totalTours.innerText = snap.size;
+  const snap = await getDocs(collection(db, "tour"));
 
-  let i=0;
-  recentTours.innerHTML="";
-
-  snap.forEach(d=>{
-    const t=d.data();
-
-    if(i<6){
-      recentTours.innerHTML += `
-        <div class="glass p-3 rounded-xl">
-          <img src="${t.image}" class="h-20 w-full object-cover rounded"/>
-          <p class="text-sm mt-1">${t.title}</p>
-        </div>`;
-    }
-    i++;
+  snap.forEach(d => {
+    const t = d.data();
 
     list.innerHTML += `
       <div class="glass p-3 rounded-xl">
         <img src="${t.image}" class="h-28 w-full object-cover rounded mb-2"/>
+
         <b>${t.title}</b>
+        <p class="text-sm opacity-60">${t.category}</p>
 
         <div class="flex gap-2 mt-2">
           <button onclick="editTour('${d.id}','${t.title}','${t.description}','${t.image}','${t.slug}','${t.category}')"
@@ -246,42 +264,39 @@ async function loadTours(){
           <button onclick="deleteTour('${d.id}')"
           class="bg-red-500 px-3 py-1 rounded">Delete</button>
         </div>
-      </div>`;
+      </div>
+    `;
   });
 }
 
-window.editTour = (id,t,d,img,s,c)=>{
-  docId.value=id;
-  title.value=t;
-  description.value=d;
-  slug.value=s;
-  category.value=c;
-
-  imageURL=img;
-
-  previewImg.src=img;
-  previewImg.classList.remove("hidden");
-  noPreview.style.display="none";
-};
-
-window.deleteTour = async (id)=>{
-  await deleteDoc(doc(db,"tour",id));
+/* DELETE */
+window.deleteTour = async (id) => {
+  await deleteDoc(doc(db, "tour", id));
   loadTours();
 };
 
-window.logout = async ()=>{
+/* EDIT */
+window.editTour = (id, t, d, img, s, c) => {
+  $("docId").value = id;
+  $("title").value = t;
+  $("description").value = d;
+  $("slug").value = s;
+  $("category").value = c;
+
+  imageURL = img;
+
+  $("previewImg").src = img;
+  $("previewImg").classList.remove("hidden");
+  $("noPreview").style.display = "none";
+};
+
+/* LOGOUT */
+window.logout = async () => {
   await signOut(auth);
   location.replace("index.html");
 };
 
-window.showSection = (s)=>{
-  dashboardSection.classList.toggle("hidden",s!=="dashboard");
-  toursSection.classList.toggle("hidden",s!=="tours");
-};
-
-showSection("dashboard");
 loadTours();
-
 </script>
 
 </body>
