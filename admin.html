@@ -5,14 +5,13 @@
 <title>Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
 body {
   background: radial-gradient(circle at top, #0f0f0f, #000);
   color: white;
+  font-family: system-ui;
 }
 
 .glass {
@@ -22,16 +21,11 @@ body {
 }
 
 .card {
-  transition: .4s ease;
+  transition: .3s ease;
 }
 
 .card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 20px 50px rgba(0,0,0,.4);
-}
-
-.preview {
-  border: 1px dashed rgba(255,255,255,0.2);
 }
 </style>
 </head>
@@ -42,9 +36,15 @@ body {
 <header class="flex justify-between items-center px-6 py-4 glass">
   <h1 class="font-bold">Tour Admin Panel</h1>
 
-  <button onclick="logout()" class="bg-white text-black px-4 py-2 rounded">
-    Logout
-  </button>
+  <div class="flex gap-2">
+    <button onclick="startTutorial()" class="bg-white/10 px-3 py-1 rounded">
+      Help
+    </button>
+
+    <button onclick="logout()" class="bg-white text-black px-4 py-2 rounded">
+      Logout
+    </button>
+  </div>
 </header>
 
 <!-- MAIN -->
@@ -55,26 +55,25 @@ body {
 
   <h2 class="text-xl font-bold mb-4">Create / Edit Tour</h2>
 
-  <input id="docId" placeholder="Edit ID (optional)"
-    class="w-full mb-3 p-3 rounded bg-white/10 outline-none">
+  <input id="docId" placeholder="Edit ID"
+    class="w-full mb-3 p-3 rounded bg-white/10">
 
   <input id="title" placeholder="Title"
-    class="w-full mb-3 p-3 rounded bg-white/10 outline-none">
+    class="w-full mb-3 p-3 rounded bg-white/10">
 
   <textarea id="description" placeholder="Description"
-    class="w-full mb-3 p-3 rounded bg-white/10 outline-none"></textarea>
+    class="w-full mb-3 p-3 rounded bg-white/10"></textarea>
 
   <select id="category"
-    class="w-full mb-3 p-3 rounded bg-white/10 outline-none text-black">
+    class="w-full mb-3 p-3 rounded bg-white/10 text-black">
     <option value="Day Tour">Day Tour</option>
     <option value="Round Tour">Round Tour</option>
     <option value="Tailor Made">Tailor Made</option>
   </select>
 
   <input id="slug" placeholder="Slug"
-    class="w-full mb-3 p-3 rounded bg-white/10 outline-none">
+    class="w-full mb-3 p-3 rounded bg-white/10">
 
-  <!-- IMAGE UPLOAD -->
   <input type="file" id="imageFile" class="mb-3">
 
   <button onclick="uploadImage()"
@@ -84,10 +83,9 @@ body {
 
   <p id="status" class="text-green-400 text-sm mt-2"></p>
 
-  <!-- PREVIEW -->
-  <div class="mt-4 preview rounded-xl overflow-hidden h-48 flex items-center justify-center">
+  <div class="mt-4 h-40 rounded overflow-hidden bg-white/5 flex items-center justify-center">
     <img id="previewImg" class="hidden w-full h-full object-cover"/>
-    <p id="noPreview" class="text-sm text-white/50">Image preview will appear here</p>
+    <p id="noPreview" class="text-white/40">Preview</p>
   </div>
 
   <button onclick="saveTour()"
@@ -101,34 +99,34 @@ body {
 <div class="glass rounded-2xl p-6">
 
   <h2 class="text-xl font-bold mb-4">All Tours</h2>
-
-  <div id="list" class="space-y-4"></div>
+  <div id="list" class="space-y-3"></div>
 
 </div>
 
+</div>
+
+<!-- TUTORIAL -->
+<div id="tutorial" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center">
+  <div class="bg-white text-black p-6 rounded-2xl max-w-md w-full">
+    <h2 class="text-xl font-bold mb-2">Admin Tutorial</h2>
+
+    <p id="tutText" class="text-sm mb-4">
+      Welcome to admin panel
+    </p>
+
+    <div class="flex justify-between">
+      <button onclick="prevTut()">Back</button>
+      <button onclick="nextTut()" class="font-bold">Next</button>
+    </div>
+
+    <button onclick="closeTut()" class="text-xs mt-3 text-gray-500">
+      Skip
+    </button>
+  </div>
 </div>
 
 <script type="module">
 
-  window.history.pushState(null, "", window.location.href);
-
-window.addEventListener("popstate", () => {
-  window.location.replace("./index.html");
-});
-
-  onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    // stops back button restore
-    window.location.replace("./index.html");
-  }
-});
-
-  window.logout = async () => {
-  await signOut(auth);
-
-  // clear history + force redirect
-  window.location.replace("./index.html");
-};
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs,
@@ -140,9 +138,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
- apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
-    authDomain: "voyo-lanka.firebaseapp.com",
-    projectId: "voyo-lanka"
+  apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
+  authDomain: "voyo-lanka.firebaseapp.com",
+  projectId: "voyo-lanka"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -151,12 +149,20 @@ const auth = getAuth(app);
 
 let imageURL = "";
 
-/* AUTH GUARD */
+/* AUTH FIX */
 onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = "./index.html";
+  if (!user) {
+    window.location.replace("./index.html");
+  }
 });
 
-/* IMAGE UPLOAD */
+/* BACK BUTTON LOCK */
+window.history.pushState(null, "", location.href);
+window.onpopstate = () => {
+  window.location.replace("./index.html");
+};
+
+/* CLOUDINARY */
 window.uploadImage = async function () {
   const file = imageFile.files[0];
   if (!file) return alert("Select image");
@@ -177,8 +183,6 @@ window.uploadImage = async function () {
   imageURL = data.secure_url;
 
   status.innerText = "Uploaded ✔";
-
-  // LIVE PREVIEW
   previewImg.src = imageURL;
   previewImg.classList.remove("hidden");
   noPreview.style.display = "none";
@@ -216,19 +220,20 @@ async function loadTours() {
     div.className = "card bg-white/10 p-3 rounded-xl";
 
     div.innerHTML = `
-      <img src="${t.image}" class="h-32 w-full object-cover rounded-lg mb-2"/>
+      <img src="${t.image}" class="h-32 w-full object-cover rounded mb-2"/>
 
-      <h3 class="font-bold">${t.title}</h3>
+      <b>${t.title}</b>
       <p class="text-sm text-white/60">${t.category}</p>
 
       <div class="flex gap-2 mt-2">
         <button onclick="editTour('${d.id}', '${t.title}', \`${t.description}\`, '${t.image}', '${t.slug}', '${t.category}')"
-          class="bg-blue-500 px-3 py-1 rounded">Edit</button>
+        class="bg-blue-500 px-3 py-1 rounded">Edit</button>
 
         <button onclick="deleteTour('${d.id}')"
-          class="bg-red-500 px-3 py-1 rounded">Delete</button>
+        class="bg-red-500 px-3 py-1 rounded">Delete</button>
       </div>
     `;
+
     list.appendChild(div);
   });
 }
@@ -246,7 +251,6 @@ window.editTour = (id, t, d, img, s, c) => {
   category.value = c;
 
   imageURL = img;
-
   previewImg.src = img;
   previewImg.classList.remove("hidden");
   noPreview.style.display = "none";
@@ -254,10 +258,47 @@ window.editTour = (id, t, d, img, s, c) => {
 
 window.logout = async () => {
   await signOut(auth);
-  window.location.href = "./index.html";
+  window.location.replace("./index.html");
 };
 
 loadTours();
+
+/* ---------------- TUTORIAL ---------------- */
+
+let step = 0;
+const steps = [
+  "Welcome 👋 This is your admin dashboard.",
+  "Fill the form to create a tour.",
+  "Upload image using Cloudinary.",
+  "Save to Firebase database.",
+  "Edit or delete anytime from list.",
+  "Done 🎉 You are ready!"
+];
+
+window.startTutorial = function () {
+  step = 0;
+  tutorial.classList.remove("hidden");
+  updateTut();
+};
+
+window.nextTut = function () {
+  if (step < steps.length - 1) step++;
+  updateTut();
+};
+
+window.prevTut = function () {
+  if (step > 0) step--;
+  updateTut();
+};
+
+window.closeTut = function () {
+  tutorial.classList.add("hidden");
+};
+
+function updateTut() {
+  tutText.innerText = steps[step];
+}
+
 </script>
 
 </body>
