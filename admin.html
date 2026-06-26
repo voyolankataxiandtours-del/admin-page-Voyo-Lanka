@@ -1,91 +1,113 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Voyo Admin</title>
+<title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background: radial-gradient(circle at top, #0f0f0f, #000);
+  color: white;
+}
+
+.glass {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.card {
+  transition: .4s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+}
+
+.preview {
+  border: 1px dashed rgba(255,255,255,0.2);
+}
+</style>
 </head>
 
-<body class="min-h-screen bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470');">
+<body>
 
-<!-- DARK OVERLAY -->
-<div class="min-h-screen bg-black/70 flex text-white">
+<!-- TOP BAR -->
+<header class="flex justify-between items-center px-6 py-4 glass">
+  <h1 class="font-bold">Tour Admin Panel</h1>
 
-<!-- SIDEBAR -->
-<aside class="w-64 bg-black/60 backdrop-blur-md p-6 flex flex-col justify-between">
-
-  <div>
-    <h1 class="text-2xl font-bold mb-8">Voyo Admin</h1>
-
-    <nav class="space-y-3 text-sm">
-      <a href="#" class="block hover:text-yellow-300">📊 Dashboard</a>
-      <a href="#form" class="block hover:text-yellow-300">➕ Add Tour</a>
-      <a href="#list" class="block hover:text-yellow-300">📁 Manage Tours</a>
-    </nav>
-  </div>
-
-  <button onclick="logout()" class="text-red-400 hover:text-red-200 text-sm">
-    🚪 Logout
+  <button onclick="logout()" class="bg-white text-black px-4 py-2 rounded">
+    Logout
   </button>
-
-</aside>
+</header>
 
 <!-- MAIN -->
-<main class="flex-1 p-8 overflow-y-auto">
+<div class="max-w-6xl mx-auto p-6 grid lg:grid-cols-2 gap-6">
 
-  <!-- HEADER -->
-  <div class="mb-6">
-    <h2 class="text-3xl font-bold">Tour Management</h2>
-    <p class="text-gray-300 text-sm">Manage your tours, images and categories</p>
+<!-- FORM -->
+<div class="glass rounded-2xl p-6">
+
+  <h2 class="text-xl font-bold mb-4">Create / Edit Tour</h2>
+
+  <input id="docId" placeholder="Edit ID (optional)"
+    class="w-full mb-3 p-3 rounded bg-white/10 outline-none">
+
+  <input id="title" placeholder="Title"
+    class="w-full mb-3 p-3 rounded bg-white/10 outline-none">
+
+  <textarea id="description" placeholder="Description"
+    class="w-full mb-3 p-3 rounded bg-white/10 outline-none"></textarea>
+
+  <select id="category"
+    class="w-full mb-3 p-3 rounded bg-white/10 outline-none text-black">
+    <option value="Day Tour">Day Tour</option>
+    <option value="Round Tour">Round Tour</option>
+    <option value="Tailor Made">Tailor Made</option>
+  </select>
+
+  <input id="slug" placeholder="Slug"
+    class="w-full mb-3 p-3 rounded bg-white/10 outline-none">
+
+  <!-- IMAGE UPLOAD -->
+  <input type="file" id="imageFile" class="mb-3">
+
+  <button onclick="uploadImage()"
+    class="w-full bg-blue-500 py-2 rounded font-bold">
+    Upload Image
+  </button>
+
+  <p id="status" class="text-green-400 text-sm mt-2"></p>
+
+  <!-- PREVIEW -->
+  <div class="mt-4 preview rounded-xl overflow-hidden h-48 flex items-center justify-center">
+    <img id="previewImg" class="hidden w-full h-full object-cover"/>
+    <p id="noPreview" class="text-sm text-white/50">Image preview will appear here</p>
   </div>
 
-  <!-- FORM CARD -->
-  <section id="form" class="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-lg mb-8">
-
-    <h3 class="text-lg font-semibold mb-4">Add / Edit Tour</h3>
-
-    <input id="docId" placeholder="Edit ID (optional)" class="w-full p-2 mb-2 rounded bg-white/90 text-black">
-
-    <input id="title" placeholder="Tour Title" class="w-full p-2 mb-2 rounded bg-white/90 text-black">
-
-    <textarea id="description" placeholder="Description" class="w-full p-2 mb-2 rounded bg-white/90 text-black"></textarea>
-
-    <select id="category" class="w-full p-2 mb-2 rounded bg-white/90 text-black">
-      <option value="day">Day Tour</option>
-      <option value="round">Round Tour</option>
-      <option value="tailor">Tailor Made</option>
-    </select>
-
-    <input id="slug" placeholder="Slug (e.g. kandy-tour)" class="w-full p-2 mb-2 rounded bg-white/90 text-black">
-
-    <input type="file" id="imageFile" class="mb-3 text-sm">
-
-    <button onclick="uploadImage()" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-semibold">
-      Upload Image
-    </button>
-
-    <p id="status" class="text-green-400 text-sm mt-2"></p>
-
-    <button onclick="saveTour()" class="w-full mt-4 bg-black hover:bg-gray-900 py-2 rounded font-semibold border border-white/20">
-      Save Tour
-    </button>
-
-  </section>
-
-  <!-- LIST -->
-  <section id="list" class="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-lg">
-
-    <h3 class="text-lg font-semibold mb-4">All Tours</h3>
-
-    <div id="tourList" class="space-y-3"></div>
-
-  </section>
-
-</main>
+  <button onclick="saveTour()"
+    class="w-full mt-4 bg-white text-black py-3 rounded font-bold">
+    Save Tour
+  </button>
 
 </div>
 
-<!-- FIREBASE -->
+<!-- LIST -->
+<div class="glass rounded-2xl p-6">
+
+  <h2 class="text-xl font-bold mb-4">All Tours</h2>
+
+  <div id="list" class="space-y-4"></div>
+
+</div>
+
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -98,9 +120,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
-  authDomain: "voyo-lanka.firebaseapp.com",
-  projectId: "voyo-lanka"
+ apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
+    authDomain: "voyo-lanka.firebaseapp.com",
+    projectId: "voyo-lanka"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -111,39 +133,35 @@ let imageURL = "";
 
 /* AUTH GUARD */
 onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "./index.html";
-  }
+  if (!user) window.location.href = "./index.html";
 });
 
-/* UPLOAD IMAGE */
+/* IMAGE UPLOAD */
 window.uploadImage = async function () {
   const file = imageFile.files[0];
-
-  if (!file) return alert("Select image first");
+  if (!file) return alert("Select image");
 
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", "tour_upload");
 
-  const res = await fetch(
-    "https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
-    {
-      method: "POST",
-      body: formData
-    }
-  );
+  const res = await fetch("https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload", {
+    method: "POST",
+    body: formData
+  });
 
   const data = await res.json();
 
-  if (!data.secure_url) {
-    console.log(data);
-    alert("Upload failed");
-    return;
-  }
+  if (!data.secure_url) return alert("Upload failed");
 
   imageURL = data.secure_url;
-  document.getElementById("status").innerText = "Image uploaded ✔";
+
+  status.innerText = "Uploaded ✔";
+
+  // LIVE PREVIEW
+  previewImg.src = imageURL;
+  previewImg.classList.remove("hidden");
+  noPreview.style.display = "none";
 };
 
 /* SAVE */
@@ -167,50 +185,54 @@ window.saveTour = async function () {
 
 /* LOAD */
 async function loadTours() {
-  tourList.innerHTML = "";
+  list.innerHTML = "";
 
   const snap = await getDocs(collection(db, "tour"));
 
   snap.forEach(d => {
     const t = d.data();
 
-    const card = document.createElement("div");
-    card.className = "flex justify-between items-center bg-white/20 p-3 rounded-lg border border-white/10";
+    const div = document.createElement("div");
+    div.className = "card bg-white/10 p-3 rounded-xl";
 
-    card.innerHTML = `
-      <div>
-        <p class="font-bold">${t.title}</p>
-        <p class="text-xs text-gray-300">${t.category}</p>
-      </div>
+    div.innerHTML = `
+      <img src="${t.image}" class="h-32 w-full object-cover rounded-lg mb-2"/>
 
-      <div class="flex gap-2">
+      <h3 class="font-bold">${t.title}</h3>
+      <p class="text-sm text-white/60">${t.category}</p>
+
+      <div class="flex gap-2 mt-2">
         <button onclick="editTour('${d.id}', '${t.title}', \`${t.description}\`, '${t.image}', '${t.slug}', '${t.category}')"
-        class="bg-blue-500 px-3 py-1 rounded text-sm">Edit</button>
+          class="bg-blue-500 px-3 py-1 rounded">Edit</button>
 
         <button onclick="deleteTour('${d.id}')"
-        class="bg-red-500 px-3 py-1 rounded text-sm">Delete</button>
+          class="bg-red-500 px-3 py-1 rounded">Delete</button>
       </div>
     `;
-
-    tourList.appendChild(card);
+    list.appendChild(div);
   });
 }
 
-window.deleteTour = async function(id) {
+window.deleteTour = async (id) => {
   await deleteDoc(doc(db, "tour", id));
   loadTours();
 };
 
-window.editTour = function(id, t, d, img, s, c) {
+window.editTour = (id, t, d, img, s, c) => {
   docId.value = id;
   title.value = t;
   description.value = d;
   slug.value = s;
   category.value = c;
+
   imageURL = img;
+
+  previewImg.src = img;
+  previewImg.classList.remove("hidden");
+  noPreview.style.display = "none";
 };
 
-window.logout = async function () {
+window.logout = async () => {
   await signOut(auth);
   window.location.href = "./index.html";
 };
