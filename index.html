@@ -1,45 +1,159 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Admin Login</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Day Tours</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background: #f6f5f2;
+}
+
+/* CARD ANIMATION */
+.tour-card {
+  transition: all .5s ease;
+}
+
+.tour-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 60px rgba(0,0,0,.15);
+}
+
+/* IMAGE ZOOM */
+.tour-img {
+  transition: transform .8s ease;
+}
+
+.tour-card:hover .tour-img {
+  transform: scale(1.12);
+}
+
+/* FADE IN */
+.fade {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn .6s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+
 </head>
 
-<body class="flex items-center justify-center h-screen bg-gray-100">
+<body class="text-gray-900">
 
-<div class="bg-white p-6 rounded-xl shadow w-80">
-  <h1 class="text-xl font-bold mb-4">Admin Login</h1>
+<!-- NAV -->
+<header class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm">
+  <div class="flex justify-between items-center px-6 py-4 max-w-6xl mx-auto">
 
-  <input id="email" class="w-full border p-2 mb-2" placeholder="Email">
-  <input id="password" type="password" class="w-full border p-2 mb-4" placeholder="Password">
+    <h1 class="font-bold text-lg">LOGO</h1>
 
-  <button onclick="login()" class="w-full bg-black text-white py-2 rounded">
-    Login
-  </button>
-</div>
+    <nav class="hidden md:flex gap-6 text-sm text-gray-600">
+      <a href="index.html">Home</a>
+      <a href="aboutlanka.html">About</a>
+      <a href="daytour.html">Day Tours</a>
+      <a href="roundtour.html">Round Tours</a>
+      <a href="tailormade.html">Tailor Made</a>
+      <a href="contact.html">Contact</a>
+    </nav>
 
+    <button class="bg-black text-white px-4 py-2 rounded">
+      Contact
+    </button>
+
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="pt-28 pb-10 text-center">
+  <h1 class="text-4xl font-bold">Day Tours</h1>
+  <p class="text-gray-500 mt-2">Explore Sri Lanka in one perfect day</p>
+</section>
+
+<!-- GRID -->
+<section class="max-w-6xl mx-auto px-6 pb-20">
+  <div id="tourList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</section>
+
+<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
- apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
-    authDomain: "voyo-lanka.firebaseapp.com",
-    projectId: "voyo-lanka"
+  apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
+  authDomain: "voyo-lanka.firebaseapp.com",
+  projectId: "voyo-lanka"
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const db = getFirestore(app);
 
-window.login = async function () {
-  try {
-    await signInWithEmailAndPassword(auth, email.value, password.value);
-    window.location.href = "admin.html";
-  } catch (e) {
-    alert("Login failed");
-  }
-};
+const tourList = document.getElementById("tourList");
+
+/* CREATE CARD */
+function createCard(t) {
+  const div = document.createElement("div");
+
+  div.className = "tour-card bg-white rounded-2xl overflow-hidden shadow fade";
+
+  div.innerHTML = `
+    <div class="relative h-64 overflow-hidden">
+
+      <img src="${t.image}" class="tour-img w-full h-full object-cover"/>
+
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+
+      <div class="absolute top-4 left-4">
+        <span class="bg-white text-black text-xs font-bold px-3 py-1 rounded-full">
+          ${t.category || "Tour"}
+        </span>
+      </div>
+
+      <div class="absolute bottom-4 left-4 right-4 text-white">
+        <h3 class="text-lg font-bold">${t.title}</h3>
+
+        <p class="text-xs text-white/80 mt-1">
+          ${t.description ? t.description.slice(0, 90) + "..." : ""}
+        </p>
+      </div>
+
+    </div>
+
+    <div class="p-4 flex justify-between items-center">
+      <span class="text-xs text-gray-500">${t.slug || ""}</span>
+
+      <a href="tour-detail.html?slug=${t.slug}"
+         class="text-sm font-semibold hover:underline">
+        View →
+      </a>
+    </div>
+  `;
+
+  return div;
+}
+
+/* LOAD */
+async function loadTours() {
+  tourList.innerHTML = "";
+
+  const snap = await getDocs(collection(db, "tour"));
+
+  snap.forEach(doc => {
+    const data = doc.data();
+    tourList.appendChild(createCard(data));
+  });
+}
+
+loadTours();
 </script>
 
 </body>
