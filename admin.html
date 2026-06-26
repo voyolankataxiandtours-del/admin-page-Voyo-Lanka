@@ -87,21 +87,38 @@ onAuthStateChanged(auth, (user) => {
 window.uploadImage = async function () {
   const file = imageFile.files[0];
 
+  if (!file) {
+    alert("Select image first");
+    return;
+  }
+
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("upload_preset", "upload_image_tour");
 
-  const res = await fetch("https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload", {
-    method: "POST",
-    body: formData
-  });
+  // MUST MATCH CLOUDINARY PRESET EXACTLY
+  formData.append("upload_preset", "tour_upload");
+
+  const res = await fetch(
+    "https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
+    {
+      method: "POST",
+      body: formData
+    }
+  );
 
   const data = await res.json();
+
+  console.log("Cloudinary response:", data);
+
+  if (!data.secure_url) {
+    alert("Upload failed - check Cloudinary preset + cloud name");
+    return;
+  }
+
   imageURL = data.secure_url;
 
   document.getElementById("status").innerText = "Image uploaded ✔";
 };
-
 /* SAVE */
 window.saveTour = async function () {
   const data = {
