@@ -242,30 +242,62 @@ window.saveTour = async () => {
 
 /* LOAD TOURS */
 async function loadTours() {
-  const list = $("list");
   list.innerHTML = "";
 
   const snap = await getDocs(collection(db, "tour"));
 
-  snap.forEach(d => {
-    const t = d.data();
+  const tours = [];
 
-    list.innerHTML += `
-      <div class="glass p-3 rounded-xl">
-        <img src="${t.image}" class="h-28 w-full object-cover rounded mb-2"/>
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
 
-        <b>${t.title}</b>
-        <p class="text-sm opacity-60">${t.category}</p>
+    tours.push({
+      id: docSnap.id,
+      ...data
+    });
+  });
 
-        <div class="flex gap-2 mt-2">
-          <button onclick="editTour('${d.id}','${t.title}','${t.description}','${t.image}','${t.slug}','${t.category}')"
-          class="bg-blue-500 px-3 py-1 rounded">Edit</button>
+  // 🔢 TOTAL COUNT FIX
+  totalTours.innerText = tours.length;
 
-          <button onclick="deleteTour('${d.id}')"
-          class="bg-red-500 px-3 py-1 rounded">Delete</button>
-        </div>
+  // 🧠 CLEAR DASHBOARD AREA
+  recentTours.innerHTML = "";
+
+  // 📌 RENDER RECENT (latest 6)
+  const recent = tours.slice(-6).reverse();
+
+  recent.forEach(t => {
+    const card = document.createElement("div");
+    card.className = "glass p-3 rounded-xl";
+
+    card.innerHTML = `
+      <img src="${t.image || ''}" class="h-24 w-full object-cover rounded mb-2"/>
+      <b>${t.title || 'No title'}</b>
+      <p class="text-xs opacity-70">${t.category || ''}</p>
+    `;
+
+    recentTours.appendChild(card);
+  });
+
+  // 📋 FULL LIST
+  tours.reverse().forEach(t => {
+    const div = document.createElement("div");
+    div.className = "glass p-3 rounded-xl";
+
+    div.innerHTML = `
+      <img src="${t.image || ''}" class="h-32 w-full object-cover rounded mb-2"/>
+      <b>${t.title || 'No title'}</b>
+
+      <div class="flex gap-2 mt-2">
+        <button onclick="editTour('${t.id}','${t.title || ''}','${t.description || ''}','${t.image || ''}','${t.slug || ''}','${t.category || ''}')"
+        class="bg-blue-500 px-3 py-1 rounded">Edit</button>
+
+        <button onclick="deleteTour('${t.id}')"
+        class="bg-red-500 px-3 py-1 rounded">Delete</button>
       </div>
     `;
+
+    list.appendChild(div);
   });
 }
 
