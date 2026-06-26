@@ -1,101 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Voyo Admin</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Day Tours</title>
+
+<!-- PREVENT CACHE (IMPORTANT FOR LOGOUT SECURITY) -->
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  background: #f6f5f2;
+}
+
+/* CARD STYLE */
+.tour-card {
+  transition: all .5s ease;
+}
+
+.tour-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 25px 60px rgba(0,0,0,.15);
+}
+
+/* IMAGE ZOOM */
+.tour-img {
+  transition: transform .8s ease;
+}
+
+.tour-card:hover .tour-img {
+  transform: scale(1.12);
+}
+
+/* FADE IN */
+.fade {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn .6s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
+
 </head>
 
-<body class="min-h-screen bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470');">
+<body class="text-gray-900">
 
-<!-- DARK OVERLAY -->
-<div class="min-h-screen bg-black/70 flex text-white">
+<!-- NAV -->
+<header class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm">
+  <div class="flex justify-between items-center px-6 py-4 max-w-6xl mx-auto">
 
-<!-- SIDEBAR -->
-<aside class="w-64 bg-black/60 backdrop-blur-md p-6 flex flex-col justify-between">
+    <h1 class="font-bold text-lg">LOGO</h1>
 
-  <div>
-    <h1 class="text-2xl font-bold mb-8">Voyo Admin</h1>
-
-    <nav class="space-y-3 text-sm">
-      <a href="#" class="block hover:text-yellow-300">📊 Dashboard</a>
-      <a href="#form" class="block hover:text-yellow-300">➕ Add Tour</a>
-      <a href="#list" class="block hover:text-yellow-300">📁 Manage Tours</a>
+    <nav class="hidden md:flex gap-6 text-sm text-gray-600">
+      <a href="index.html">Home</a>
+      <a href="aboutlanka.html">About</a>
+      <a href="daytour.html">Day Tours</a>
+      <a href="roundtour.html">Round Tours</a>
+      <a href="tailormade.html">Tailor Made</a>
+      <a href="contact.html">Contact</a>
     </nav>
-  </div>
 
-  <button onclick="logout()" class="text-red-400 hover:text-red-200 text-sm">
-    🚪 Logout
-  </button>
-
-</aside>
-
-<!-- MAIN -->
-<main class="flex-1 p-8 overflow-y-auto">
-
-  <!-- HEADER -->
-  <div class="mb-6">
-    <h2 class="text-3xl font-bold">Tour Management</h2>
-    <p class="text-gray-300 text-sm">Manage your tours, images and categories</p>
-  </div>
-
-  <!-- FORM CARD -->
-  <section id="form" class="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-lg mb-8">
-
-    <h3 class="text-lg font-semibold mb-4">Add / Edit Tour</h3>
-
-    <input id="docId" placeholder="Edit ID (optional)" class="w-full p-2 mb-2 rounded bg-white/90 text-black">
-
-    <input id="title" placeholder="Tour Title" class="w-full p-2 mb-2 rounded bg-white/90 text-black">
-
-    <textarea id="description" placeholder="Description" class="w-full p-2 mb-2 rounded bg-white/90 text-black"></textarea>
-
-    <select id="category" class="w-full p-2 mb-2 rounded bg-white/90 text-black">
-      <option value="day">Day Tour</option>
-      <option value="round">Round Tour</option>
-      <option value="tailor">Tailor Made</option>
-    </select>
-
-    <input id="slug" placeholder="Slug (e.g. kandy-tour)" class="w-full p-2 mb-2 rounded bg-white/90 text-black">
-
-    <input type="file" id="imageFile" class="mb-3 text-sm">
-
-    <button onclick="uploadImage()" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-semibold">
-      Upload Image
+    <button class="bg-black text-white px-4 py-2 rounded">
+      Contact
     </button>
 
-    <p id="status" class="text-green-400 text-sm mt-2"></p>
+  </div>
+</header>
 
-    <button onclick="saveTour()" class="w-full mt-4 bg-black hover:bg-gray-900 py-2 rounded font-semibold border border-white/20">
-      Save Tour
-    </button>
+<!-- HERO -->
+<section class="pt-28 pb-10 text-center">
+  <h1 class="text-4xl font-bold">Day Tours</h1>
+  <p class="text-gray-500 mt-2">Explore Sri Lanka in one perfect day</p>
+</section>
 
-  </section>
-
-  <!-- LIST -->
-  <section id="list" class="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-lg">
-
-    <h3 class="text-lg font-semibold mb-4">All Tours</h3>
-
-    <div id="tourList" class="space-y-3"></div>
-
-  </section>
-
-</main>
-
-</div>
+<!-- GRID -->
+<section class="max-w-6xl mx-auto px-6 pb-20">
+  <div id="tourList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</section>
 
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, getDocs,
-  deleteDoc, doc, updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-import {
-  getAuth, signOut, onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
@@ -105,117 +101,70 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
 
-let imageURL = "";
+const tourList = document.getElementById("tourList");
 
-/* AUTH GUARD */
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "./index.html";
-  }
-});
+/* CREATE CARD */
+function createCard(t) {
+  const div = document.createElement("div");
 
-/* UPLOAD IMAGE */
-window.uploadImage = async function () {
-  const file = imageFile.files[0];
+  div.className = "tour-card bg-white rounded-2xl overflow-hidden shadow fade";
 
-  if (!file) return alert("Select image first");
+  div.innerHTML = `
+    <div class="relative h-64 overflow-hidden">
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", "tour_upload");
+      <img src="${t.image}" class="tour-img w-full h-full object-cover"/>
 
-  const res = await fetch(
-    "https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
-    {
-      method: "POST",
-      body: formData
-    }
-  );
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
 
-  const data = await res.json();
+      <div class="absolute top-4 left-4">
+        <span class="bg-white text-black text-xs font-bold px-3 py-1 rounded-full">
+          ${t.category || "Tour"}
+        </span>
+      </div>
 
-  if (!data.secure_url) {
-    console.log(data);
-    alert("Upload failed");
-    return;
-  }
+      <div class="absolute bottom-4 left-4 right-4 text-white">
+        <h3 class="text-lg font-bold">${t.title}</h3>
+        <p class="text-xs text-white/80 mt-1">
+          ${t.description ? t.description.slice(0, 90) + "..." : ""}
+        </p>
+      </div>
 
-  imageURL = data.secure_url;
-  document.getElementById("status").innerText = "Image uploaded ✔";
-};
+    </div>
 
-/* SAVE */
-window.saveTour = async function () {
-  const data = {
-    title: title.value,
-    description: description.value,
-    category: category.value,
-    slug: slug.value,
-    image: imageURL
-  };
+    <div class="p-4 flex justify-between items-center">
+      <span class="text-xs text-gray-500">${t.slug || ""}</span>
 
-  if (docId.value) {
-    await updateDoc(doc(db, "tour", docId.value), data);
-  } else {
-    await addDoc(collection(db, "tour"), data);
-  }
+      <a href="tour-detail.html?slug=${t.slug}"
+         class="text-sm font-semibold hover:underline">
+        View →
+      </a>
+    </div>
+  `;
 
-  loadTours();
-};
+  return div;
+}
 
-/* LOAD */
+/* LOAD TOURS */
 async function loadTours() {
   tourList.innerHTML = "";
 
   const snap = await getDocs(collection(db, "tour"));
 
-  snap.forEach(d => {
-    const t = d.data();
-
-    const card = document.createElement("div");
-    card.className = "flex justify-between items-center bg-white/20 p-3 rounded-lg border border-white/10";
-
-    card.innerHTML = `
-      <div>
-        <p class="font-bold">${t.title}</p>
-        <p class="text-xs text-gray-300">${t.category}</p>
-      </div>
-
-      <div class="flex gap-2">
-        <button onclick="editTour('${d.id}', '${t.title}', \`${t.description}\`, '${t.image}', '${t.slug}', '${t.category}')"
-        class="bg-blue-500 px-3 py-1 rounded text-sm">Edit</button>
-
-        <button onclick="deleteTour('${d.id}')"
-        class="bg-red-500 px-3 py-1 rounded text-sm">Delete</button>
-      </div>
-    `;
-
-    tourList.appendChild(card);
+  snap.forEach(doc => {
+    const data = doc.data();
+    tourList.appendChild(createCard(data));
   });
 }
 
-window.deleteTour = async function(id) {
-  await deleteDoc(doc(db, "tour", id));
-  loadTours();
-};
-
-window.editTour = function(id, t, d, img, s, c) {
-  docId.value = id;
-  title.value = t;
-  description.value = d;
-  slug.value = s;
-  category.value = c;
-  imageURL = img;
-};
-
-window.logout = async function () {
-  await signOut(auth);
-  window.location.href = "./index.html";
-};
-
 loadTours();
+
+/* 🔐 BACK BUTTON PROTECTION */
+window.history.pushState(null, "", window.location.href);
+
+window.addEventListener("popstate", function () {
+  window.location.href = "./index.html";
+});
 </script>
 
 </body>
