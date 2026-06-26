@@ -1,47 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Voyo Lanka Admin</title>
+<meta charset="UTF-8">
+<title>Admin Panel</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 flex">
+<body class="bg-gray-100">
 
-<!-- SIDEBAR -->
-<div class="w-64 h-screen bg-black text-white p-5 fixed">
-
-  <h1 class="text-xl font-bold mb-8">Voyo Admin</h1>
-
-  <nav class="space-y-3 text-sm">
-    <p class="text-gray-400">MENU</p>
-    <a href="#" class="block hover:text-yellow-300">Dashboard</a>
-    <a href="#form" class="block hover:text-yellow-300">Add Tour</a>
-    <a href="#list" class="block hover:text-yellow-300">Manage Tours</a>
-  </nav>
-
+<div class="bg-black text-white p-4 flex justify-between">
+  <h1>Tour Admin Panel</h1>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<!-- MAIN -->
-<div class="ml-64 flex-1 p-6">
-
-<!-- TOP BAR -->
-<div class="flex justify-between items-center mb-6">
-  <h2 class="text-2xl font-bold">Tour Management</h2>
-  <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded">
-    Logout
-  </button>
-</div>
+<div class="max-w-4xl mx-auto p-6">
 
 <!-- FORM -->
-<div id="form" class="bg-white p-6 rounded-xl shadow mb-6">
+<div class="bg-white p-5 rounded-xl shadow mb-6">
 
-  <h3 class="font-bold mb-4">Add / Edit Tour</h3>
+  <input id="docId" placeholder="Edit ID (optional)" class="border p-2 w-full mb-2">
 
-  <input id="docId" placeholder="Document ID (auto)" class="border p-2 w-full mb-2">
-
-  <input id="title" placeholder="Tour Title" class="border p-2 w-full mb-2">
+  <input id="title" placeholder="Title" class="border p-2 w-full mb-2">
 
   <textarea id="description" placeholder="Description" class="border p-2 w-full mb-2"></textarea>
 
@@ -51,54 +30,42 @@
     <option value="tailor">Tailor Made</option>
   </select>
 
-  <input id="slug" placeholder="Slug (kandy-tour)" class="border p-2 w-full mb-2">
+  <input id="slug" placeholder="Slug" class="border p-2 w-full mb-2">
 
-  <!-- IMAGE UPLOAD -->
   <input type="file" id="imageFile" class="mb-2">
 
-  <button onclick="uploadImage()" class="bg-blue-600 text-white px-4 py-2 rounded">
+  <button onclick="uploadImage()" class="bg-blue-500 text-white px-4 py-2 rounded">
     Upload Image
   </button>
 
-  <p id="uploadStatus" class="text-green-600 text-sm mt-2"></p>
+  <p id="status" class="text-green-600 text-sm"></p>
 
-  <button onclick="saveTour()" class="mt-4 bg-black text-white px-4 py-2 rounded w-full">
+  <button onclick="saveTour()" class="mt-4 bg-black text-white w-full py-2 rounded">
     Save Tour
   </button>
 
 </div>
 
 <!-- LIST -->
-<div id="list" class="bg-white p-6 rounded-xl shadow">
-
-  <h3 class="font-bold mb-4">All Tours</h3>
-
-  <div id="tourList" class="space-y-3"></div>
-
+<div class="bg-white p-5 rounded-xl shadow">
+  <div id="list"></div>
 </div>
 
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
-
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "admin-login.html";
-  }
-});
-  
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs,
   deleteDoc, doc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  getAuth, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
- apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
+  apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
     authDomain: "voyo-lanka.firebaseapp.com",
     projectId: "voyo-lanka"
 };
@@ -109,7 +76,14 @@ const auth = getAuth(app);
 
 let imageURL = "";
 
-/* IMAGE UPLOAD */
+/* 🔐 LOGIN GUARD */
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "admin-login.html";
+  }
+});
+
+/* UPLOAD IMAGE */
 window.uploadImage = async function () {
   const file = imageFile.files[0];
 
@@ -125,10 +99,10 @@ window.uploadImage = async function () {
   const data = await res.json();
   imageURL = data.secure_url;
 
-  uploadStatus.innerText = "Image uploaded ✔";
+  status.innerText = "Image uploaded ✔";
 };
 
-/* SAVE TOUR */
+/* SAVE */
 window.saveTour = async function () {
   const data = {
     title: title.value,
@@ -147,44 +121,42 @@ window.saveTour = async function () {
   loadTours();
 };
 
-/* LOAD TOURS */
+/* LOAD */
 async function loadTours() {
-  tourList.innerHTML = "";
+  list.innerHTML = "";
 
   const snap = await getDocs(collection(db, "tour"));
 
   snap.forEach(d => {
     const t = d.data();
 
-    const card = document.createElement("div");
-    card.className = "flex justify-between items-center border p-3 rounded";
+    const div = document.createElement("div");
+    div.className = "flex justify-between border p-3 mb-2 rounded";
 
-    card.innerHTML = `
+    div.innerHTML = `
       <div>
-        <p class="font-bold">${t.title}</p>
-        <p class="text-xs text-gray-500">${t.category}</p>
+        <b>${t.title}</b><br>
+        <small>${t.category}</small>
       </div>
 
       <div class="flex gap-2">
         <button onclick="editTour('${d.id}', '${t.title}', \`${t.description}\`, '${t.image}', '${t.slug}', '${t.category}')"
-        class="bg-blue-500 text-white px-3 py-1 rounded">Edit</button>
+        class="bg-blue-500 text-white px-2 rounded">Edit</button>
 
         <button onclick="deleteTour('${d.id}')"
-        class="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
+        class="bg-red-500 text-white px-2 rounded">Delete</button>
       </div>
     `;
 
-    tourList.appendChild(card);
+    list.appendChild(div);
   });
 }
 
-/* DELETE */
 window.deleteTour = async function(id) {
   await deleteDoc(doc(db, "tour", id));
   loadTours();
 };
 
-/* EDIT */
 window.editTour = function(id, t, d, img, s, c) {
   docId.value = id;
   title.value = t;
@@ -194,7 +166,6 @@ window.editTour = function(id, t, d, img, s, c) {
   imageURL = img;
 };
 
-/* LOGOUT */
 window.logout = async function () {
   await signOut(auth);
   window.location.href = "admin-login.html";
