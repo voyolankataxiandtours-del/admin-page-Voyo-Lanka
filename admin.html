@@ -1,170 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Day Tours</title>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- PREVENT CACHE (IMPORTANT FOR LOGOUT SECURITY) -->
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
 body {
-  background: #f6f5f2;
+  background: #f3f4f6;
 }
 
-/* CARD STYLE */
-.tour-card {
-  transition: all .5s ease;
+.card {
+  transition: .4s ease;
 }
 
-.tour-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 25px 60px rgba(0,0,0,.15);
-}
-
-/* IMAGE ZOOM */
-.tour-img {
-  transition: transform .8s ease;
-}
-
-.tour-card:hover .tour-img {
-  transform: scale(1.12);
-}
-
-/* FADE IN */
-.fade {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeIn .6s forwards;
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0,0,0,.1);
 }
 </style>
-
 </head>
 
-<body class="text-gray-900">
+<body>
 
-<!-- NAV -->
-<header class="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm">
-  <div class="flex justify-between items-center px-6 py-4 max-w-6xl mx-auto">
-
-    <h1 class="font-bold text-lg">LOGO</h1>
-
-    <nav class="hidden md:flex gap-6 text-sm text-gray-600">
-      <a href="index.html">Home</a>
-      <a href="aboutlanka.html">About</a>
-      <a href="daytour.html">Day Tours</a>
-      <a href="roundtour.html">Round Tours</a>
-      <a href="tailormade.html">Tailor Made</a>
-      <a href="contact.html">Contact</a>
-    </nav>
-
-    <button class="bg-black text-white px-4 py-2 rounded">
-      Contact
-    </button>
-
-  </div>
+<!-- TOP BAR -->
+<header class="bg-black text-white px-6 py-4 flex justify-between items-center">
+  <h1 class="font-bold">Tour Admin</h1>
+  <button onclick="logout()" class="bg-white text-black px-4 py-1 rounded">
+    Logout
+  </button>
 </header>
 
-<!-- HERO -->
-<section class="pt-28 pb-10 text-center">
-  <h1 class="text-4xl font-bold">Day Tours</h1>
-  <p class="text-gray-500 mt-2">Explore Sri Lanka in one perfect day</p>
-</section>
+<!-- CONTAINER -->
+<div class="max-w-6xl mx-auto p-6 grid md:grid-cols-3 gap-6">
 
-<!-- GRID -->
-<section class="max-w-6xl mx-auto px-6 pb-20">
-  <div id="tourList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-</section>
+<!-- FORM -->
+<div class="bg-white p-5 rounded-xl shadow md:col-span-1">
 
-<!-- FIREBASE -->
+  <h2 class="font-bold text-lg mb-3">Add / Edit Tour</h2>
+
+  <input id="docId" placeholder="Edit ID (optional)" class="border p-2 w-full mb-2">
+
+  <input id="title" placeholder="Title" class="border p-2 w-full mb-2">
+
+  <textarea id="description" placeholder="Description" class="border p-2 w-full mb-2"></textarea>
+
+  <select id="category" class="border p-2 w-full mb-2">
+    <option value="Day Tour">Day Tour</option>
+    <option value="Round Tour">Round Tour</option>
+    <option value="Tailor Made">Tailor Made</option>
+  </select>
+
+  <input id="slug" placeholder="Slug" class="border p-2 w-full mb-2">
+
+  <input type="file" id="imageFile" class="mb-2">
+
+  <button onclick="uploadImage()" class="bg-blue-600 text-white w-full py-2 rounded">
+    Upload Image
+  </button>
+
+  <p id="status" class="text-sm text-green-600 mt-2"></p>
+
+  <button onclick="saveTour()" class="bg-black text-white w-full py-2 rounded mt-3">
+    Save Tour
+  </button>
+
+</div>
+
+<!-- LIST -->
+<div class="md:col-span-2 space-y-4">
+
+  <h2 class="font-bold text-lg">All Tours</h2>
+
+  <div id="list" class="grid md:grid-cols-2 gap-4"></div>
+
+</div>
+
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getFirestore, collection, addDoc, getDocs,
+  deleteDoc, doc, updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  getAuth, signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
-  authDomain: "voyo-lanka.firebaseapp.com",
-  projectId: "voyo-lanka"
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-const tourList = document.getElementById("tourList");
+let imageURL = "";
 
-/* CREATE CARD */
-function createCard(t) {
-  const div = document.createElement("div");
+/* LOGIN GUARD */
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    window.location.href = "./index.html";
+  }
+});
 
-  div.className = "tour-card bg-white rounded-2xl overflow-hidden shadow fade";
+/* CLOUDINARY UPLOAD */
+window.uploadImage = async function () {
+  const file = imageFile.files[0];
+  if (!file) return alert("Select image first");
 
-  div.innerHTML = `
-    <div class="relative h-64 overflow-hidden">
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "tour_upload");
 
-      <img src="${t.image}" class="tour-img w-full h-full object-cover"/>
+  const res = await fetch("https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload", {
+    method: "POST",
+    body: formData
+  });
 
-      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+  const data = await res.json();
 
-      <div class="absolute top-4 left-4">
-        <span class="bg-white text-black text-xs font-bold px-3 py-1 rounded-full">
-          ${t.category || "Tour"}
-        </span>
-      </div>
+  if (!data.secure_url) {
+    alert("Upload failed");
+    return;
+  }
 
-      <div class="absolute bottom-4 left-4 right-4 text-white">
-        <h3 class="text-lg font-bold">${t.title}</h3>
-        <p class="text-xs text-white/80 mt-1">
-          ${t.description ? t.description.slice(0, 90) + "..." : ""}
-        </p>
-      </div>
+  imageURL = data.secure_url;
+  status.innerText = "Image uploaded ✔";
+};
 
-    </div>
+/* SAVE */
+window.saveTour = async function () {
+  const data = {
+    title: title.value,
+    description: description.value,
+    category: category.value,
+    slug: slug.value,
+    image: imageURL
+  };
 
-    <div class="p-4 flex justify-between items-center">
-      <span class="text-xs text-gray-500">${t.slug || ""}</span>
+  if (docId.value) {
+    await updateDoc(doc(db, "tour", docId.value), data);
+  } else {
+    await addDoc(collection(db, "tour"), data);
+  }
 
-      <a href="tour-detail.html?slug=${t.slug}"
-         class="text-sm font-semibold hover:underline">
-        View →
-      </a>
-    </div>
-  `;
+  loadTours();
+};
 
-  return div;
-}
-
-/* LOAD TOURS */
+/* LOAD */
 async function loadTours() {
-  tourList.innerHTML = "";
+  list.innerHTML = "";
 
   const snap = await getDocs(collection(db, "tour"));
 
-  snap.forEach(doc => {
-    const data = doc.data();
-    tourList.appendChild(createCard(data));
+  snap.forEach(d => {
+    const t = d.data();
+
+    const div = document.createElement("div");
+    div.className = "card bg-white p-3 rounded-xl shadow";
+
+    div.innerHTML = `
+      <img src="${t.image}" class="h-32 w-full object-cover rounded-lg mb-2"/>
+
+      <h3 class="font-bold">${t.title}</h3>
+      <p class="text-sm text-gray-500">${t.category}</p>
+
+      <div class="flex gap-2 mt-2">
+        <button onclick="editTour('${d.id}', '${t.title}', \`${t.description}\`, '${t.image}', '${t.slug}', '${t.category}')"
+        class="bg-blue-500 text-white px-2 rounded">Edit</button>
+
+        <button onclick="deleteTour('${d.id}')"
+        class="bg-red-500 text-white px-2 rounded">Delete</button>
+      </div>
+    `;
+    list.appendChild(div);
   });
 }
 
-loadTours();
+window.deleteTour = async (id) => {
+  await deleteDoc(doc(db, "tour", id));
+  loadTours();
+};
 
-/* 🔐 BACK BUTTON PROTECTION */
-window.history.pushState(null, "", window.location.href);
+window.editTour = (id, t, d, img, s, c) => {
+  docId.value = id;
+  title.value = t;
+  description.value = d;
+  slug.value = s;
+  category.value = c;
+  imageURL = img;
+};
 
-window.addEventListener("popstate", function () {
+window.logout = async () => {
+  await signOut(auth);
   window.location.href = "./index.html";
-});
+};
+
+loadTours();
 </script>
 
 </body>
