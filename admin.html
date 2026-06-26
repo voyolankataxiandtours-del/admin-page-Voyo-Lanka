@@ -20,9 +20,11 @@ body {
   border: 1px solid rgba(255,255,255,0.1);
 }
 
+.card {
+  transition: .3s ease;
+}
 .card:hover {
   transform: translateY(-6px);
-  transition: .3s;
 }
 </style>
 </head>
@@ -45,18 +47,13 @@ body {
 <!-- MAIN -->
 <div class="flex-1 p-6">
 
-<!-- TOP -->
+<!-- TOP BAR -->
 <div class="glass flex justify-between items-center p-4 rounded-xl mb-4">
   <h1 class="font-bold">Dashboard</h1>
 
-  <div class="flex gap-2">
-    <input id="search" oninput="filterTours()" placeholder="Search..."
-      class="bg-white/10 px-3 py-1 rounded"/>
-
-    <button onclick="newTour()" class="bg-green-500 px-3 py-1 rounded">
-      + Add
-    </button>
-  </div>
+  <button onclick="newTour()" class="bg-green-500 px-3 py-1 rounded">
+    + Add Tour
+  </button>
 </div>
 
 <!-- DASHBOARD -->
@@ -114,11 +111,7 @@ body {
 <div id="list" class="space-y-3"></div>
 
 </div>
-
 </div>
-
-<!-- TOAST -->
-<div id="toast" class="hidden fixed bottom-5 right-5 bg-green-500 px-4 py-2 rounded"></div>
 
 <script type="module">
 
@@ -148,63 +141,59 @@ onAuthStateChanged(auth, user => {
   if (!user) location.replace("index.html");
 });
 
-/* BACK BUTTON LOCK */
+/* BACK BLOCK */
 history.pushState(null, "", location.href);
 onpopstate = () => location.replace("index.html");
 
-/* TOAST */
-function toast(msg){
-  const t=document.getElementById("toast");
-  t.innerText=msg;
-  t.classList.remove("hidden");
-  setTimeout(()=>t.classList.add("hidden"),2000);
-}
-
-/* CLOUDINARY */
-window.uploadImage = async () => {
-  const file = imageFile.files[0];
-  if (!file) return;
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", "tour_upload");
-
-  const res = await fetch("https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload", {
-    method: "POST",
-    body: formData
-  });
-
-  const data = await res.json();
-
-  if (!data.secure_url) return toast("Upload failed");
-
-  imageURL = data.secure_url;
-
-  document.getElementById("status").innerText = "Uploaded ✔";
-  previewImg.src = imageURL;
-  previewImg.classList.remove("hidden");
-  noPreview.style.display = "none";
-
-  toast("Image uploaded");
-};
-
-/* NEW TOUR RESET */
+/* RESET FORM */
 window.newTour = () => {
   docId.value = "";
   title.value = "";
   description.value = "";
   slug.value = "";
   category.value = "Day Tour";
+
   imageURL = "";
+  status.innerText = "";
 
   previewImg.classList.add("hidden");
   noPreview.style.display = "block";
+};
 
-  toast("New tour mode");
+/* CLOUDINARY */
+window.uploadImage = async () => {
+  const file = imageFile.files[0];
+  if (!file) return alert("Select image first");
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "tour_upload");
+
+  const res = await fetch(
+    "https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
+    { method: "POST", body: formData }
+  );
+
+  const data = await res.json();
+
+  if (!data.secure_url) return alert("Upload failed");
+
+  imageURL = data.secure_url;
+
+  status.innerText = "Uploaded ✔";
+  previewImg.src = imageURL;
+  previewImg.classList.remove("hidden");
+  noPreview.style.display = "none";
 };
 
 /* SAVE */
 window.saveTour = async () => {
+
+  if (!title.value || !description.value) {
+    alert("Fill required fields");
+    return;
+  }
+
   const data = {
     title: title.value,
     description: description.value,
@@ -219,8 +208,8 @@ window.saveTour = async () => {
     await addDoc(collection(db,"tour"),data);
   }
 
+  newTour();
   loadTours();
-  toast("Saved");
 };
 
 /* LOAD */
@@ -230,52 +219,38 @@ async function loadTours(){
 
   totalTours.innerText = snap.size;
 
+  let i=0;
   recentTours.innerHTML="";
-
-  let count=0;
 
   snap.forEach(d=>{
     const t=d.data();
 
-    const card=document.createElement("div");
-    card.className="glass p-3 rounded-xl card";
+    if(i<6){
+      recentTours.innerHTML += `
+        <div class="glass p-3 rounded-xl">
+          <img src="${t.image}" class="h-20 w-full object-cover rounded"/>
+          <p class="text-sm mt-1">${t.title}</p>
+        </div>`;
+    }
+    i++;
 
-    card.innerHTML=`
-      <img src="${t.image}" class="h-24 w-full object-cover rounded mb-2"/>
-      <b>${t.title}</b>
-      <p class="text-xs opacity-70">${t.category}</p>
-    `;
+    list.innerHTML += `
+      <div class="glass p-3 rounded-xl">
+        <img src="${t.image}" class="h-28 w-full object-cover rounded mb-2"/>
+        <b>${t.title}</b>
 
-    if(count<6) recentTours.appendChild(card);
-    count++;
+        <div class="flex gap-2 mt-2">
+          <button onclick="editTour('${d.id}','${t.title}','${t.description}','${t.image}','${t.slug}','${t.category}')"
+          class="bg-blue-500 px-3 py-1 rounded">Edit</button>
 
-    const div=document.createElement("div");
-    div.className="glass p-3 rounded-xl";
-
-    div.innerHTML=`
-      <img src="${t.image}" class="h-32 w-full object-cover rounded mb-2"/>
-      <b>${t.title}</b>
-
-      <div class="flex gap-2 mt-2">
-        <button onclick="editTour('${d.id}','${t.title}','${t.description}','${t.image}','${t.slug}','${t.category}')"
-        class="bg-blue-500 px-3 py-1 rounded">Edit</button>
-
-        <button onclick="deleteTour('${d.id}')"
-        class="bg-red-500 px-3 py-1 rounded">Delete</button>
-      </div>
-    `;
-
-    list.appendChild(div);
+          <button onclick="deleteTour('${d.id}')"
+          class="bg-red-500 px-3 py-1 rounded">Delete</button>
+        </div>
+      </div>`;
   });
 }
 
-window.deleteTour = async (id)=>{
-  await deleteDoc(doc(db,"tour",id));
-  toast("Deleted");
-  loadTours();
-};
-
-window.editTour=(id,t,d,img,s,c)=>{
+window.editTour = (id,t,d,img,s,c)=>{
   docId.value=id;
   title.value=t;
   description.value=d;
@@ -283,14 +258,23 @@ window.editTour=(id,t,d,img,s,c)=>{
   category.value=c;
 
   imageURL=img;
+
+  previewImg.src=img;
+  previewImg.classList.remove("hidden");
+  noPreview.style.display="none";
 };
 
-window.logout=async()=>{
+window.deleteTour = async (id)=>{
+  await deleteDoc(doc(db,"tour",id));
+  loadTours();
+};
+
+window.logout = async ()=>{
   await signOut(auth);
   location.replace("index.html");
 };
 
-window.showSection=(s)=>{
+window.showSection = (s)=>{
   dashboardSection.classList.toggle("hidden",s!=="dashboard");
   toursSection.classList.toggle("hidden",s!=="tours");
 };
