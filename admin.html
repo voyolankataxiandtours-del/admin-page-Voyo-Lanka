@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tour Admin Panel</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 p-6">
+
+<h1 class="text-2xl font-bold mb-6">Tour Admin Panel</h1>
+
+<!-- FORM -->
+<div class="bg-white p-6 rounded-xl shadow mb-8">
+  <h2 class="text-lg font-bold mb-4">Add / Edit Tour</h2>
+
+  <input id="docId" placeholder="Document ID (auto or edit)" class="w-full p-2 border mb-2"/>
+
+  <input id="title" placeholder="Title" class="w-full p-2 border mb-2"/>
+
+  <textarea id="description" placeholder="Description" class="w-full p-2 border mb-2"></textarea>
+
+  <input id="image" placeholder="Image URL" class="w-full p-2 border mb-2"/>
+
+  <input id="slug" placeholder="Slug (kandy-city-tour)" class="w-full p-2 border mb-2"/>
+
+  <select id="category" class="w-full p-2 border mb-4">
+    <option value="day">Day Tour</option>
+    <option value="round">Round Tour</option>
+    <option value="tailor">Tailor Made</option>
+  </select>
+
+  <button onclick="saveTour()" class="bg-black text-white px-4 py-2 rounded">
+    Save Tour
+  </button>
+</div>
+
+<!-- LIST -->
+<div class="bg-white p-6 rounded-xl shadow">
+  <h2 class="text-lg font-bold mb-4">All Tours</h2>
+  <div id="list"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+  getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
+  authDomain: "voyo-lanka.firebaseapp.com",
+  projectId: "voyo-lanka"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const list = document.getElementById("list");
+
+async function loadTours() {
+  list.innerHTML = "";
+
+  const snap = await getDocs(collection(db, "tour"));
+
+  snap.forEach(d => {
+    const t = d.data();
+
+    const div = document.createElement("div");
+    div.className = "border p-3 mb-2 rounded";
+
+    div.innerHTML = `
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold">${t.title}</h3>
+          <p class="text-sm text-gray-500">${t.category}</p>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="editTour('${d.id}', '${t.title}', \`${t.description}\`, '${t.image}', '${t.slug}', '${t.category}')" 
+          class="px-3 py-1 bg-blue-500 text-white rounded">Edit</button>
+
+          <button onclick="deleteTour('${d.id}')" 
+          class="px-3 py-1 bg-red-500 text-white rounded">Delete</button>
+        </div>
+      </div>
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+window.saveTour = async function () {
+  const id = document.getElementById("docId").value;
+
+  const data = {
+    title: title.value,
+    description: description.value,
+    image: image.value,
+    slug: slug.value,
+    category: category.value
+  };
+
+  if (id) {
+    await updateDoc(doc(db, "tour", id), data);
+  } else {
+    await addDoc(collection(db, "tour"), data);
+  }
+
+  loadTours();
+};
+
+window.deleteTour = async function(id) {
+  await deleteDoc(doc(db, "tour", id));
+  loadTours();
+};
+
+window.editTour = function(id, t, d, img, s, c) {
+  docId.value = id;
+  title.value = t;
+  description.value = d;
+  image.value = img;
+  slug.value = s;
+  category.value = c;
+};
+
+loadTours();
+</script>
+
+</body>
+</html>
