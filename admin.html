@@ -27,6 +27,10 @@ body {
 .card:hover {
   transform: translateY(-6px);
 }
+
+input, textarea, select {
+  outline: none;
+}
 </style>
 </head>
 
@@ -34,7 +38,7 @@ body {
 
 <!-- TOP BAR -->
 <header class="flex justify-between items-center px-6 py-4 glass">
-  <h1 class="font-bold">Tour Admin Panel</h1>
+  <h1 class="font-bold text-lg">Tour Admin Dashboard</h1>
 
   <div class="flex gap-2">
     <button onclick="startTutorial()" class="bg-white/10 px-3 py-1 rounded">
@@ -55,7 +59,7 @@ body {
 
   <h2 class="text-xl font-bold mb-4">Create / Edit Tour</h2>
 
-  <input id="docId" placeholder="Edit ID"
+  <input id="docId" placeholder="Edit ID (optional)"
     class="w-full mb-3 p-3 rounded bg-white/10">
 
   <input id="title" placeholder="Title"
@@ -83,9 +87,10 @@ body {
 
   <p id="status" class="text-green-400 text-sm mt-2"></p>
 
+  <!-- PREVIEW -->
   <div class="mt-4 h-40 rounded overflow-hidden bg-white/5 flex items-center justify-center">
     <img id="previewImg" class="hidden w-full h-full object-cover"/>
-    <p id="noPreview" class="text-white/40">Preview</p>
+    <p id="noPreview" class="text-white/40">Image Preview</p>
   </div>
 
   <button onclick="saveTour()"
@@ -108,11 +113,10 @@ body {
 <!-- TUTORIAL -->
 <div id="tutorial" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center">
   <div class="bg-white text-black p-6 rounded-2xl max-w-md w-full">
+
     <h2 class="text-xl font-bold mb-2">Admin Tutorial</h2>
 
-    <p id="tutText" class="text-sm mb-4">
-      Welcome to admin panel
-    </p>
+    <p id="tutText" class="text-sm mb-4"></p>
 
     <div class="flex justify-between">
       <button onclick="prevTut()">Back</button>
@@ -122,6 +126,7 @@ body {
     <button onclick="closeTut()" class="text-xs mt-3 text-gray-500">
       Skip
     </button>
+
   </div>
 </div>
 
@@ -149,20 +154,23 @@ const auth = getAuth(app);
 
 let imageURL = "";
 
-/* AUTH FIX */
+/* AUTH */
 onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.replace("./index.html");
-  }
+  if (!user) window.location.replace("./index.html");
 });
 
-/* BACK BUTTON LOCK */
+/* LOCK BACK BUTTON */
 window.history.pushState(null, "", location.href);
 window.onpopstate = () => {
   window.location.replace("./index.html");
 };
 
-/* CLOUDINARY */
+/* ELEMENTS SAFE ACCESS */
+const previewImg = document.getElementById("previewImg");
+const noPreview = document.getElementById("noPreview");
+const statusEl = document.getElementById("status");
+
+/* UPLOAD */
 window.uploadImage = async function () {
   const file = imageFile.files[0];
   if (!file) return alert("Select image");
@@ -177,12 +185,11 @@ window.uploadImage = async function () {
   });
 
   const data = await res.json();
-
   if (!data.secure_url) return alert("Upload failed");
 
   imageURL = data.secure_url;
 
- document.getElementById("status").innerText = "Uploaded ✔";
+  statusEl.innerText = "Uploaded ✔";
   previewImg.src = imageURL;
   previewImg.classList.remove("hidden");
   noPreview.style.display = "none";
@@ -263,16 +270,16 @@ window.logout = async () => {
 
 loadTours();
 
-/* ---------------- TUTORIAL ---------------- */
-
+/* TUTORIAL */
 let step = 0;
+
 const steps = [
-  "Welcome 👋 This is your admin dashboard.",
-  "Fill the form to create a tour.",
-  "Upload image using Cloudinary.",
-  "Save to Firebase database.",
-  "Edit or delete anytime from list.",
-  "Done 🎉 You are ready!"
+  "Welcome to Admin Panel 👋",
+  "Fill form to create tours",
+  "Upload image using Cloudinary",
+  "Save stores in Firebase",
+  "Edit or delete anytime",
+  "Done 🚀 You're ready"
 ];
 
 window.startTutorial = function () {
