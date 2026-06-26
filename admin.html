@@ -297,6 +297,16 @@ window.logout = async () => {
 };
 
 loadTours();
+
+  window.showSection = (section) => {
+  const dashboard = document.getElementById("dashboardSection");
+  const tours = document.getElementById("toursSection");
+
+  if (!dashboard || !tours) return;
+
+  dashboard.classList.toggle("hidden", section !== "dashboard");
+  tours.classList.toggle("hidden", section !== "tours");
+};
 </script>
 
 </body>
