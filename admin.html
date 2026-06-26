@@ -109,6 +109,20 @@ body {
 </div>
 
 <script type="module">
+
+  onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    // stops back button restore
+    window.location.replace("./index.html");
+  }
+});
+
+  window.logout = async () => {
+  await signOut(auth);
+
+  // clear history + force redirect
+  window.location.replace("./index.html");
+};
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs,
