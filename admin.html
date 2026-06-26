@@ -99,7 +99,7 @@ window.uploadImage = async function () {
   const data = await res.json();
   imageURL = data.secure_url;
 
-  status.innerText = "Image uploaded ✔";
+  document.getElementById("status").innerText = "Image uploaded ✔";
 };
 
 /* SAVE */
