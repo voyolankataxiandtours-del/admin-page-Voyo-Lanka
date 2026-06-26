@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
 <title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.tailwindcss.com"></script>
 
@@ -20,15 +20,9 @@ body {
   border: 1px solid rgba(255,255,255,0.1);
 }
 
-.card {
-  transition: .3s ease;
-}
 .card:hover {
   transform: translateY(-6px);
-}
-
-.sidebar {
-  width: 240px;
+  transition: .3s;
 }
 </style>
 </head>
@@ -36,12 +30,12 @@ body {
 <body class="flex">
 
 <!-- SIDEBAR -->
-<div class="sidebar glass h-screen p-4 hidden md:block">
-  <h1 class="text-lg font-bold mb-6">Admin Panel</h1>
+<div class="w-56 h-screen glass p-4 hidden md:block">
+  <h1 class="font-bold mb-6">Admin Panel</h1>
 
   <button onclick="showSection('dashboard')" class="block w-full text-left mb-2">📊 Dashboard</button>
   <button onclick="showSection('tours')" class="block w-full text-left mb-2">🧳 Tours</button>
-  <button onclick="startTutorial()" class="block w-full text-left mb-2">❓ Tutorial</button>
+  <button onclick="newTour()" class="block w-full text-left mb-2 text-green-400">➕ Add New Tour</button>
 
   <hr class="my-4 border-white/10"/>
 
@@ -51,36 +45,41 @@ body {
 <!-- MAIN -->
 <div class="flex-1 p-6">
 
-<!-- TOP BAR -->
+<!-- TOP -->
 <div class="glass flex justify-between items-center p-4 rounded-xl mb-4">
   <h1 class="font-bold">Dashboard</h1>
 
-  <input id="search" oninput="filterTours()" placeholder="Search tours..."
-    class="bg-white/10 px-3 py-1 rounded w-40 md:w-64"/>
+  <div class="flex gap-2">
+    <input id="search" oninput="filterTours()" placeholder="Search..."
+      class="bg-white/10 px-3 py-1 rounded"/>
 
+    <button onclick="newTour()" class="bg-green-500 px-3 py-1 rounded">
+      + Add
+    </button>
+  </div>
 </div>
 
-<!-- DASHBOARD STATS -->
+<!-- DASHBOARD -->
 <div id="dashboardSection">
 
-  <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-    <div class="glass p-4 rounded-xl">
-      <h2 class="text-sm opacity-70">Total Tours</h2>
-      <p id="totalTours" class="text-2xl font-bold">0</p>
-    </div>
+  <div class="glass p-4 rounded-xl w-48 mb-4">
+    <p class="text-sm opacity-60">Total Tours</p>
+    <h2 id="totalTours" class="text-2xl font-bold">0</h2>
   </div>
 
+  <h2 class="mb-2 font-bold">Recent Tours</h2>
+  <div id="recentTours" class="grid md:grid-cols-3 gap-3"></div>
 </div>
 
 <!-- TOURS -->
-<div id="toursSection" class="grid md:grid-cols-2 gap-6 hidden">
+<div id="toursSection" class="hidden grid md:grid-cols-2 gap-6">
 
 <!-- FORM -->
 <div class="glass p-4 rounded-xl">
 
   <h2 class="font-bold mb-3">Add / Edit Tour</h2>
 
-  <input id="docId" placeholder="Edit ID" class="w-full mb-2 p-2 bg-white/10 rounded">
+  <input id="docId" placeholder="ID" class="w-full mb-2 p-2 bg-white/10 rounded">
   <input id="title" placeholder="Title" class="w-full mb-2 p-2 bg-white/10 rounded">
   <textarea id="description" placeholder="Description" class="w-full mb-2 p-2 bg-white/10 rounded"></textarea>
 
@@ -106,7 +105,7 @@ body {
   </div>
 
   <button onclick="saveTour()" class="bg-white text-black w-full mt-3 py-2 rounded font-bold">
-    Save
+    Save Tour
   </button>
 
 </div>
@@ -119,27 +118,7 @@ body {
 </div>
 
 <!-- TOAST -->
-<div id="toast" class="hidden fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded"></div>
-
-<!-- LOADING -->
-<div id="loading" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center">
-  <div class="text-white">Loading...</div>
-</div>
-
-<!-- TUTORIAL -->
-<div id="tutorial" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center">
-  <div class="bg-white text-black p-5 rounded-xl w-80">
-    <h2 class="font-bold mb-2">Tutorial</h2>
-    <p id="tutText">Welcome</p>
-
-    <div class="flex justify-between mt-4">
-      <button onclick="prevTut()">Back</button>
-      <button onclick="nextTut()">Next</button>
-    </div>
-
-    <button onclick="closeTut()" class="text-xs mt-2 text-gray-500">Close</button>
-  </div>
-</div>
+<div id="toast" class="hidden fixed bottom-5 right-5 bg-green-500 px-4 py-2 rounded"></div>
 
 <script type="module">
 
@@ -169,29 +148,22 @@ onAuthStateChanged(auth, user => {
   if (!user) location.replace("index.html");
 });
 
-/* BACK BUTTON BLOCK */
+/* BACK BUTTON LOCK */
 history.pushState(null, "", location.href);
 onpopstate = () => location.replace("index.html");
 
 /* TOAST */
-function toast(msg) {
-  const t = document.getElementById("toast");
-  t.innerText = msg;
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.innerText=msg;
   t.classList.remove("hidden");
-  setTimeout(() => t.classList.add("hidden"), 2000);
-}
-
-/* LOADING */
-function setLoading(v){
-  document.getElementById("loading").classList.toggle("hidden", !v);
+  setTimeout(()=>t.classList.add("hidden"),2000);
 }
 
 /* CLOUDINARY */
 window.uploadImage = async () => {
   const file = imageFile.files[0];
   if (!file) return;
-
-  setLoading(true);
 
   const formData = new FormData();
   formData.append("file", file);
@@ -203,11 +175,11 @@ window.uploadImage = async () => {
   });
 
   const data = await res.json();
-  setLoading(false);
 
   if (!data.secure_url) return toast("Upload failed");
 
   imageURL = data.secure_url;
+
   document.getElementById("status").innerText = "Uploaded ✔";
   previewImg.src = imageURL;
   previewImg.classList.remove("hidden");
@@ -216,10 +188,23 @@ window.uploadImage = async () => {
   toast("Image uploaded");
 };
 
+/* NEW TOUR RESET */
+window.newTour = () => {
+  docId.value = "";
+  title.value = "";
+  description.value = "";
+  slug.value = "";
+  category.value = "Day Tour";
+  imageURL = "";
+
+  previewImg.classList.add("hidden");
+  noPreview.style.display = "block";
+
+  toast("New tour mode");
+};
+
 /* SAVE */
 window.saveTour = async () => {
-  setLoading(true);
-
   const data = {
     title: title.value,
     description: description.value,
@@ -234,20 +219,35 @@ window.saveTour = async () => {
     await addDoc(collection(db,"tour"),data);
   }
 
-  setLoading(false);
-  toast("Saved!");
   loadTours();
+  toast("Saved");
 };
 
 /* LOAD */
 async function loadTours(){
   list.innerHTML="";
-  const snap = await getDocs(collection(db,"tour"));
+  const snap=await getDocs(collection(db,"tour"));
 
   totalTours.innerText = snap.size;
 
+  recentTours.innerHTML="";
+
+  let count=0;
+
   snap.forEach(d=>{
     const t=d.data();
+
+    const card=document.createElement("div");
+    card.className="glass p-3 rounded-xl card";
+
+    card.innerHTML=`
+      <img src="${t.image}" class="h-24 w-full object-cover rounded mb-2"/>
+      <b>${t.title}</b>
+      <p class="text-xs opacity-70">${t.category}</p>
+    `;
+
+    if(count<6) recentTours.appendChild(card);
+    count++;
 
     const div=document.createElement("div");
     div.className="glass p-3 rounded-xl";
@@ -255,7 +255,6 @@ async function loadTours(){
     div.innerHTML=`
       <img src="${t.image}" class="h-32 w-full object-cover rounded mb-2"/>
       <b>${t.title}</b>
-      <p class="text-sm opacity-70">${t.category}</p>
 
       <div class="flex gap-2 mt-2">
         <button onclick="editTour('${d.id}','${t.title}','${t.description}','${t.image}','${t.slug}','${t.category}')"
@@ -265,6 +264,7 @@ async function loadTours(){
         class="bg-red-500 px-3 py-1 rounded">Delete</button>
       </div>
     `;
+
     list.appendChild(div);
   });
 }
@@ -281,6 +281,7 @@ window.editTour=(id,t,d,img,s,c)=>{
   description.value=d;
   slug.value=s;
   category.value=c;
+
   imageURL=img;
 };
 
@@ -289,45 +290,13 @@ window.logout=async()=>{
   location.replace("index.html");
 };
 
-/* NAV */
-window.showSection = (s)=>{
-  dashboardSection.classList.toggle("hidden", s!=="dashboard");
-  toursSection.classList.toggle("hidden", s!=="tours");
+window.showSection=(s)=>{
+  dashboardSection.classList.toggle("hidden",s!=="dashboard");
+  toursSection.classList.toggle("hidden",s!=="tours");
 };
 
-/* INIT */
 showSection("dashboard");
 loadTours();
-
-/* TUTORIAL */
-let step=0;
-const steps=[
-"Create tour here",
-"Upload image",
-"Save to database",
-"Edit anytime",
-"Done"
-];
-
-window.startTutorial=()=>{
-  tutorial.classList.remove("hidden");
-  step=0;
-  tutText.innerText=steps[0];
-};
-
-window.nextTut=()=>{
-  if(step<steps.length-1) step++;
-  tutText.innerText=steps[step];
-};
-
-window.prevTut=()=>{
-  if(step>0) step--;
-  tutText.innerText=steps[step];
-};
-
-window.closeTut=()=>{
-  tutorial.classList.add("hidden");
-};
 
 </script>
 
