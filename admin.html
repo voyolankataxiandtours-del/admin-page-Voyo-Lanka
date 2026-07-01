@@ -313,7 +313,7 @@ async function loadTours() {
       <b>${t.title || 'No title'}</b>
 
       <div class="flex gap-2 mt-2">
-      <button onclick="editTour('${t.id}','${t.title || ''}','${t.description || ''}','${t.image || ''}','${t.slug || ''}','${t.category || ''}','${t.price || 0}')"
+      <button onclick='editTour("${t.id}", "${encodeURIComponent(t.title || "")}", "${encodeURIComponent(t.description || "")}", "${t.image || ""}", "${t.slug || ""}", "${t.category || ""}", "${t.price || 0}")'
 class="bg-blue-500 px-3 py-1 rounded">Edit</button>
 
         <button onclick="deleteTour('${t.id}')"
@@ -334,8 +334,8 @@ window.deleteTour = async (id) => {
 /* EDIT */
 window.editTour = (id, t, d, img, s, c, p) => {
   $("docId").value = id;
-  $("title").value = t;
-  $("description").value = d;
+  $("title").value = decodeURIComponent(t);
+  $("description").value = decodeURIComponent(d);
   $("slug").value = s;
   $("category").value = c;
   $("price").value = p;
