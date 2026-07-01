@@ -86,6 +86,14 @@ body {
     <option>Tailor Made</option>
   </select>
 
+
+  <input
+id="price"
+type="number"
+placeholder="Price (USD)"
+class="w-full mb-2 p-2 bg-white/10 rounded">
+
+
   <input id="slug" placeholder="Slug" class="w-full mb-2 p-2 bg-white/10 rounded">
 
   <input id="area" placeholder="Area (e.g. Kandy, Ella)" class="w-full mb-2 p-2 bg-white/10 rounded">
@@ -227,10 +235,10 @@ const data = {
   title: $("title").value,
   description: $("description").value,
   category: $("category").value,
+  price: Number($("price").value),
   slug: $("slug").value,
   image: imageURL,
 
-  // NEW
   area: $("area").value,
   tourType: $("tourType").value,
   routeFrom: $("routeFrom").value,
@@ -305,8 +313,8 @@ async function loadTours() {
       <b>${t.title || 'No title'}</b>
 
       <div class="flex gap-2 mt-2">
-        <button onclick="editTour('${t.id}','${t.title || ''}','${t.description || ''}','${t.image || ''}','${t.slug || ''}','${t.category || ''}')"
-        class="bg-blue-500 px-3 py-1 rounded">Edit</button>
+      <button onclick="editTour('${t.id}','${t.title || ''}','${t.description || ''}','${t.image || ''}','${t.slug || ''}','${t.category || ''}','${t.price || 0}')"
+class="bg-blue-500 px-3 py-1 rounded">Edit</button>
 
         <button onclick="deleteTour('${t.id}')"
         class="bg-red-500 px-3 py-1 rounded">Delete</button>
@@ -324,12 +332,13 @@ window.deleteTour = async (id) => {
 };
 
 /* EDIT */
-window.editTour = (id, t, d, img, s, c) => {
+window.editTour = (id, t, d, img, s, c, p) => {
   $("docId").value = id;
   $("title").value = t;
   $("description").value = d;
   $("slug").value = s;
   $("category").value = c;
+  $("price").value = p;
 
   imageURL = img;
 
