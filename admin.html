@@ -38,7 +38,9 @@ body {
   <button onclick="showSection('dashboard')" class="block w-full text-left mb-2">📊 Dashboard</button>
   <button onclick="showSection('tours')" class="block w-full text-left mb-2">🧳 Tours</button>
   <button onclick="newTour()" class="block w-full text-left mb-2 text-green-400">➕ Add New Tour</button>
-
+<button onclick="showSection('bookings')" class="block w-full text-left mb-2">
+📅 Bookings
+</button>
   <hr class="my-4 border-white/10"/>
 
   <button onclick="logout()" class="bg-red-500 w-full py-2 rounded">Logout</button>
@@ -70,6 +72,22 @@ body {
 
 <!-- TOURS -->
 <div id="toursSection" class="hidden grid md:grid-cols-2 gap-6">
+
+  <!-- BOOKINGS -->
+
+<div id="bookingsSection" class="hidden">
+
+<h2 class="text-3xl font-bold mb-6">
+Customer Bookings
+</h2>
+
+<div id="bookingList" class="space-y-4">
+
+Loading...
+
+</div>
+
+</div>
 
 <!-- FORM -->
 <div class="glass p-4 rounded-xl">
@@ -355,15 +373,137 @@ window.logout = async () => {
 
 loadTours();
 
-  window.showSection = (section) => {
-  const dashboard = document.getElementById("dashboardSection");
-  const tours = document.getElementById("toursSection");
+window.showSection = (section)=>{
 
-  if (!dashboard || !tours) return;
+dashboardSection.classList.add("hidden");
+toursSection.classList.add("hidden");
+bookingsSection.classList.add("hidden");
 
-  dashboard.classList.toggle("hidden", section !== "dashboard");
-  tours.classList.toggle("hidden", section !== "tours");
+if(section==="dashboard")
+dashboardSection.classList.remove("hidden");
+
+if(section==="tours")
+toursSection.classList.remove("hidden");
+
+if(section==="bookings"){
+bookingsSection.classList.remove("hidden");
+loadBookings();
+}
+
 };
+
+  async function loadBookings(){
+
+const bookingList=document.getElementById("bookingList");
+
+bookingList.innerHTML="Loading...";
+
+const q=query(
+collection(db,"bookings"),
+orderBy("createdAt","desc")
+);
+
+const snap=await getDocs(q);
+
+bookingList.innerHTML="";
+
+snap.forEach(docSnap=>{
+
+const b=docSnap.data();
+
+bookingList.innerHTML+=`
+
+<div class="glass p-6 rounded-xl">
+
+<div class="flex justify-between">
+
+<div>
+
+<h2 class="text-xl font-bold">
+${b.name}
+</h2>
+
+<p>${b.bookingID}</p>
+
+<p>${b.tour}</p>
+
+<p>
+<b>$${b.paid}</b>
+/
+$${b.total}
+</p>
+
+<p>
+${b.paymentType}
+</p>
+
+</div>
+
+<div class="text-right">
+
+<span class="bg-yellow-500 px-3 py-1 rounded">
+
+${b.status}
+
+</span>
+
+</div>
+
+</div>
+
+<div class="flex gap-3 mt-5">
+
+<button
+onclick="approveBooking('${docSnap.id}')"
+class="bg-green-600 px-4 py-2 rounded">
+
+Approve
+
+</button>
+
+<button
+onclick="rejectBooking('${docSnap.id}')"
+class="bg-red-600 px-4 py-2 rounded">
+
+Reject
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+  window.approveBooking=async(id)=>{
+
+await updateDoc(doc(db,"bookings",id),{
+
+status:"Confirmed",
+paymentStatus:"Paid"
+
+});
+
+loadBookings();
+
+}
+
+  window.rejectBooking=async(id)=>{
+
+await updateDoc(doc(db,"bookings",id),{
+
+status:"Rejected",
+paymentStatus:"Rejected"
+
+});
+
+loadBookings();
+
+}
 </script>
 
 </body>
