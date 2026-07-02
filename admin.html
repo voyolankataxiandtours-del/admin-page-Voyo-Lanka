@@ -2,86 +2,127 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard</title>
+<title>D&D Tours Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-body {
-  background: radial-gradient(circle at top, #0f0f0f, #000);
-  color: white;
-  font-family: system-ui;
+body{
+background:radial-gradient(circle at top,#111,#000);
+color:white;
+font-family:system-ui;
 }
 
-.glass {
-  background: rgba(255,255,255,0.06);
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(255,255,255,0.1);
+.glass{
+background:rgba(255,255,255,.06);
+backdrop-filter:blur(18px);
+border:1px solid rgba(255,255,255,.1);
 }
 
-.card {
-  transition: .3s ease;
+.card{
+transition:.3s;
 }
-.card:hover {
-  transform: translateY(-6px);
+
+.card:hover{
+transform:translateY(-5px);
 }
 </style>
+
 </head>
 
 <body class="flex">
 
 <!-- SIDEBAR -->
-<div class="w-56 h-screen glass p-4 hidden md:block">
-  <h1 class="font-bold mb-6">Admin Panel</h1>
 
-  <button onclick="showSection('dashboard')" class="block w-full text-left mb-2">📊 Dashboard</button>
-  <button onclick="showSection('tours')" class="block w-full text-left mb-2">🧳 Tours</button>
-  <button onclick="newTour()" class="block w-full text-left mb-2 text-green-400">➕ Add New Tour</button>
-<button onclick="showSection('bookings')" class="block w-full text-left mb-2">
-📅 Bookings
+<div class="w-60 h-screen glass p-5 hidden md:block">
+
+<h1 class="text-xl font-bold mb-8">
+D&D Tours
+</h1>
+
+<button onclick="showSection('dashboard')" class="block w-full text-left mb-3">
+📊 Dashboard
 </button>
-  <hr class="my-4 border-white/10"/>
 
-  <button onclick="logout()" class="bg-red-500 w-full py-2 rounded">Logout</button>
+<button onclick="showSection('tours')" class="block w-full text-left mb-3">
+🧳 Tours
+</button>
+
+<button onclick="newTour()" class="block w-full text-left mb-3 text-green-400">
+➕ Add Tour
+</button>
+
+<button onclick="showSection('bookings')" class="block w-full text-left mb-3">
+📅 Customer Bookings
+</button>
+
+<hr class="border-white/10 my-5">
+
+<button onclick="logout()" class="bg-red-600 w-full py-2 rounded-xl">
+Logout
+</button>
+
 </div>
 
 <!-- MAIN -->
+
 <div class="flex-1 p-6">
 
-<!-- TOP BAR -->
-<div class="glass flex justify-between items-center p-4 rounded-xl mb-4">
-  <h1 class="font-bold">Dashboard</h1>
+<div class="glass rounded-xl p-5 flex justify-between items-center mb-6">
 
-  <button onclick="newTour()" class="bg-green-500 px-3 py-1 rounded">
-    + Add Tour
-  </button>
+<h1 class="text-2xl font-bold">
+Admin Dashboard
+</h1>
+
+<button
+onclick="newTour()"
+class="bg-green-600 px-4 py-2 rounded-xl">
++ Add Tour
+</button>
+
 </div>
 
 <!-- DASHBOARD -->
+
 <div id="dashboardSection">
 
-  <div class="glass p-4 rounded-xl w-48 mb-4">
-    <p class="text-sm opacity-60">Total Tours</p>
-    <h2 id="totalTours" class="text-2xl font-bold">0</h2>
-  </div>
+<div class="glass rounded-xl p-5 w-56 mb-6">
 
-  <h2 class="mb-2 font-bold">Recent Tours</h2>
-  <div id="recentTours" class="grid md:grid-cols-3 gap-3"></div>
-</div>
+<p class="text-white/60">
+Total Tours
+</p>
 
-<!-- TOURS -->
-<div id="toursSection" class="hidden grid md:grid-cols-2 gap-6">
-
-  <!-- BOOKINGS -->
-
-<div id="bookingsSection" class="hidden">
-
-<h2 class="text-3xl font-bold mb-6">
-Customer Bookings
+<h2 id="totalTours" class="text-4xl font-black mt-2">
+0
 </h2>
 
-<div id="bookingList" class="space-y-4">
+</div>
+
+<h2 class="font-bold text-xl mb-4">
+Recent Tours
+</h2>
+
+<div
+id="recentTours"
+class="grid md:grid-cols-3 gap-4">
+</div>
+
+</div>
+
+<!-- BOOKINGS -->
+
+<div
+id="bookingsSection"
+class="hidden">
+
+<h2 class="text-3xl font-black mb-6">
+Customer Booking Requests
+</h2>
+
+<div
+id="bookingList"
+class="space-y-5">
 
 Loading...
 
@@ -89,383 +130,413 @@ Loading...
 
 </div>
 
+<!-- TOURS -->
+
+<div
+id="toursSection"
+class="hidden grid md:grid-cols-2 gap-6">
+
 <!-- FORM -->
-<div class="glass p-4 rounded-xl">
 
-  <h2 class="font-bold mb-3">Add / Edit Tour</h2>
+<div class="glass rounded-xl p-5">
 
-  <input id="docId" placeholder="ID" class="w-full mb-2 p-2 bg-white/10 rounded">
-  <input id="title" placeholder="Title" class="w-full mb-2 p-2 bg-white/10 rounded">
-  <textarea id="description" placeholder="Description" class="w-full mb-2 p-2 bg-white/10 rounded"></textarea>
+<h2 class="text-xl font-bold mb-4">
+Add / Edit Tour
+</h2>
 
-  <select id="category" class="w-full mb-2 p-2 bg-white/10 text-black rounded">
-    <option>Day Tour</option>
-    <option>Round Tour</option>
-    <option>Tailor Made</option>
-  </select>
+<input
+id="docId"
+placeholder="Document ID"
+class="w-full mb-3 p-3 rounded bg-white/10">
 
+<input
+id="title"
+placeholder="Tour Title"
+class="w-full mb-3 p-3 rounded bg-white/10">
 
-  <input
-id="price"
-type="number"
-placeholder="Price (USD)"
-class="w-full mb-2 p-2 bg-white/10 rounded">
+<textarea
+id="description"
+placeholder="Description"
+class="w-full mb-3 p-3 rounded bg-white/10"></textarea>
 
+<select
+id="category"
+class="w-full mb-3 p-3 rounded text-black">
 
-  <input id="slug" placeholder="Slug" class="w-full mb-2 p-2 bg-white/10 rounded">
+<option>Day Tour</option>
+<option>Round Tour</option>
+<option>Tailor Made</option>
 
-  <input id="area" placeholder="Area (e.g. Kandy, Ella)" class="w-full mb-2 p-2 bg-white/10 rounded">
-
-<select id="tourType" class="w-full mb-2 p-2 bg-white/10 text-black rounded">
-  <option value="single">Single Area Tour</option>
-  <option value="route">Route Tour</option>
 </select>
 
-<input id="routeFrom" placeholder="From (only for route)" class="w-full mb-2 p-2 bg-white/10 rounded">
-<input id="routeTo" placeholder="To (only for route)" class="w-full mb-2 p-2 bg-white/10 rounded">
+<input
+id="price"
+type="number"
+placeholder="Price USD"
+class="w-full mb-3 p-3 rounded bg-white/10">
 
-  <input type="file" id="imageFile" class="mb-2">
+<input
+id="slug"
+placeholder="Slug"
+class="w-full mb-3 p-3 rounded bg-white/10">
 
-  <button onclick="uploadImage()" class="bg-blue-500 w-full py-2 rounded">
-    Upload Image
-  </button>
+<input
+id="area"
+placeholder="Area"
+class="w-full mb-3 p-3 rounded bg-white/10">
 
-  <p id="status" class="text-green-400 text-sm mt-2"></p>
+<select
+id="tourType"
+class="w-full mb-3 p-3 rounded text-black">
 
-  <div class="h-40 mt-3 bg-white/5 flex items-center justify-center rounded overflow-hidden">
-    <img id="previewImg" class="hidden w-full h-full object-cover"/>
-    <span id="noPreview" class="text-white/40">Preview</span>
-  </div>
+<option value="single">
+Single Area Tour
+</option>
 
-  <button onclick="saveTour()" class="bg-white text-black w-full mt-3 py-2 rounded font-bold">
-    Save Tour
-  </button>
+<option value="route">
+Route Tour
+</option>
+
+</select>
+
+<input
+id="routeFrom"
+placeholder="Route From"
+class="w-full mb-3 p-3 rounded bg-white/10">
+
+<input
+id="routeTo"
+placeholder="Route To"
+class="w-full mb-3 p-3 rounded bg-white/10">
+
+<input
+type="file"
+id="imageFile"
+class="mb-4">
+
+<button
+onclick="uploadImage()"
+class="bg-blue-600 w-full py-3 rounded-xl">
+
+Upload Image
+
+</button>
+
+<p
+id="status"
+class="text-green-400 mt-3">
+</p>
+
+<div
+class="h-44 mt-5 rounded-xl bg-white/5 flex justify-center items-center overflow-hidden">
+
+<img
+id="previewImg"
+class="hidden w-full h-full object-cover">
+
+<span id="noPreview">
+Image Preview
+</span>
 
 </div>
 
-<!-- LIST -->
-<div id="list" class="space-y-3"></div>
+<button
+onclick="saveTour()"
+class="bg-white text-black font-bold w-full py-3 rounded-xl mt-5">
+
+Save Tour
+
+</button>
 
 </div>
+
+<!-- TOUR LIST -->
+
+<div
+id="list"
+class="space-y-4">
+
+</div>
+
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  setDoc
+
+getFirestore,
+collection,
+addDoc,
+getDocs,
+deleteDoc,
+doc,
+setDoc,
+
+query,
+orderBy,
+updateDoc
+
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
-  getAuth,
-  signOut,
-  onAuthStateChanged
+
+getAuth,
+signOut,
+onAuthStateChanged
+
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-const app = initializeApp({
-  apiKey: "AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
-  authDomain: "voyo-lanka.firebaseapp.com",
-  projectId: "voyo-lanka"
+const app=initializeApp({
+
+apiKey:"AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
+authDomain:"voyo-lanka.firebaseapp.com",
+projectId:"voyo-lanka"
+
 });
 
-const db = getFirestore(app);
-const auth = getAuth(app);
+const db=getFirestore(app);
+const auth=getAuth(app);
 
-let imageURL = "";
+let imageURL="";
 
-/* SAFE SELECTOR */
-const $ = (id) => document.getElementById(id);
+const $=(id)=>document.getElementById(id);
 
-/* AUTH GUARD */
-onAuthStateChanged(auth, (user) => {
-  if (!user) location.replace("index.html");
+onAuthStateChanged(auth,user=>{
+
+if(!user){
+
+location.replace("index.html");
+
+}
+
 });
 
-/* BACK BUTTON LOCK */
-history.pushState(null, "", location.href);
-onpopstate = () => location.replace("index.html");
+history.pushState(null,"",location.href);
 
-/* TOAST */
-function toast(msg) {
-  const t = $("status");
-  if (t) t.innerText = msg;
+onpopstate=()=>location.replace("index.html");
+
+  /* RESET FORM */
+
+window.newTour=()=>{
+
+$("docId").value="";
+$("title").value="";
+$("description").value="";
+$("category").value="Day Tour";
+$("price").value="";
+$("slug").value="";
+$("area").value="";
+$("routeFrom").value="";
+$("routeTo").value="";
+$("tourType").value="single";
+
+imageURL="";
+
+$("status").innerText="";
+
+$("previewImg").classList.add("hidden");
+$("noPreview").style.display="block";
+
+};
+
+/* CLOUDINARY */
+
+window.uploadImage=async()=>{
+
+const file=$("imageFile").files[0];
+
+if(!file){
+alert("Select an image.");
+return;
 }
 
-/* RESET FORM */
-window.newTour = () => {
-  $("docId").value = "";
-  $("title").value = "";
-  $("description").value = "";
-  $("slug").value = "";
-  $("category").value = "Day Tour";
+const fd=new FormData();
 
-  imageURL = "";
+fd.append("file",file);
+fd.append("upload_preset","tour_upload");
 
-  $("status").innerText = "";
+try{
 
-  $("previewImg").classList.add("hidden");
-  $("noPreview").style.display = "block";
-};
+const res=await fetch(
+"https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
+{
+method:"POST",
+body:fd
+});
 
-/* CLOUDINARY UPLOAD */
-window.uploadImage = async () => {
-  const file = $("imageFile").files[0];
-  if (!file) return alert("Select image first");
+const data=await res.json();
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", "tour_upload");
+imageURL=data.secure_url;
 
-  try {
-    const res = await fetch(
-      "https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
-      { method: "POST", body: formData }
-    );
+$("previewImg").src=imageURL;
+$("previewImg").classList.remove("hidden");
+$("noPreview").style.display="none";
 
-    const data = await res.json();
+$("status").innerText="Image Uploaded ✔";
 
-    if (!data.secure_url) {
-      alert("Upload failed");
-      return;
-    }
+}catch(e){
 
-    imageURL = data.secure_url;
+alert("Upload failed.");
 
-    $("status").innerText = "Uploaded ✔";
-    $("previewImg").src = imageURL;
-    $("previewImg").classList.remove("hidden");
-    $("noPreview").style.display = "none";
-
-  } catch (err) {
-    alert("Upload error");
-  }
-};
-
-/* SAVE TOUR (FIXED) */
-window.saveTour = async () => {
-const data = {
-  title: $("title").value,
-  description: $("description").value,
-  category: $("category").value,
-  price: Number($("price").value),
-  slug: $("slug").value,
-  image: imageURL,
-
-  area: $("area").value,
-  tourType: $("tourType").value,
-  routeFrom: $("routeFrom").value,
-  routeTo: $("routeTo").value
-};
-
-  const id = $("docId").value;
-
-  try {
-    if (id) {
-      // SAFE UPDATE (no crash if missing)
-      await setDoc(doc(db, "tour", id), data, { merge: true });
-    } else {
-      await addDoc(collection(db, "tour"), data);
-    }
-
-    newTour();
-    loadTours();
-
-  } catch (e) {
-    console.error(e);
-    alert("Save failed");
-  }
-};
-
-/* LOAD TOURS */
-async function loadTours() {
-  list.innerHTML = "";
-
-  const snap = await getDocs(collection(db, "tour"));
-
-  const tours = [];
-
-  snap.forEach(docSnap => {
-    const data = docSnap.data();
-
-    tours.push({
-      id: docSnap.id,
-      ...data
-    });
-  });
-
-  // 🔢 TOTAL COUNT FIX
-  totalTours.innerText = tours.length;
-
-  // 🧠 CLEAR DASHBOARD AREA
-  recentTours.innerHTML = "";
-
-  // 📌 RENDER RECENT (latest 6)
-  const recent = tours.slice(-6).reverse();
-
-  recent.forEach(t => {
-    const card = document.createElement("div");
-    card.className = "glass p-3 rounded-xl";
-
-    card.innerHTML = `
-      <img src="${t.image || ''}" class="h-24 w-full object-cover rounded mb-2"/>
-      <b>${t.title || 'No title'}</b>
-      <p class="text-xs opacity-70">${t.category || ''}</p>
-    `;
-
-    recentTours.appendChild(card);
-  });
-
-  // 📋 FULL LIST
-  tours.reverse().forEach(t => {
-    const div = document.createElement("div");
-    div.className = "glass p-3 rounded-xl";
-
-    div.innerHTML = `
-      <img src="${t.image || ''}" class="h-32 w-full object-cover rounded mb-2"/>
-      <b>${t.title || 'No title'}</b>
-
-      <div class="flex gap-2 mt-2">
-      <button onclick='editTour("${t.id}", "${encodeURIComponent(t.title || "")}", "${encodeURIComponent(t.description || "")}", "${t.image || ""}", "${t.slug || ""}", "${t.category || ""}", "${t.price || 0}")'
-class="bg-blue-500 px-3 py-1 rounded">Edit</button>
-
-        <button onclick="deleteTour('${t.id}')"
-        class="bg-red-500 px-3 py-1 rounded">Delete</button>
-      </div>
-    `;
-
-    list.appendChild(div);
-  });
 }
 
-/* DELETE */
-window.deleteTour = async (id) => {
-  await deleteDoc(doc(db, "tour", id));
-  loadTours();
 };
 
-/* EDIT */
-window.editTour = (id, t, d, img, s, c, p) => {
-  $("docId").value = id;
-  $("title").value = decodeURIComponent(t);
-  $("description").value = decodeURIComponent(d);
-  $("slug").value = s;
-  $("category").value = c;
-  $("price").value = p;
+/* SAVE TOUR */
 
-  imageURL = img;
+window.saveTour=async()=>{
 
-  $("previewImg").src = img;
-  $("previewImg").classList.remove("hidden");
-  $("noPreview").style.display = "none";
+const data={
+
+title:$("title").value,
+description:$("description").value,
+category:$("category").value,
+price:Number($("price").value),
+
+slug:$("slug").value,
+
+image:imageURL,
+
+area:$("area").value,
+
+tourType:$("tourType").value,
+routeFrom:$("routeFrom").value,
+routeTo:$("routeTo").value
+
 };
 
-/* LOGOUT */
-window.logout = async () => {
-  await signOut(auth);
-  location.replace("index.html");
-};
+const id=$("docId").value;
+
+try{
+
+if(id){
+
+await setDoc(
+doc(db,"tour",id),
+data,
+{merge:true}
+);
+
+}else{
+
+await addDoc(
+collection(db,"tour"),
+data
+);
+
+}
+
+newTour();
 
 loadTours();
 
-window.showSection = (section)=>{
+}catch(e){
 
-dashboardSection.classList.add("hidden");
-toursSection.classList.add("hidden");
-bookingsSection.classList.add("hidden");
+console.error(e);
 
-if(section==="dashboard")
-dashboardSection.classList.remove("hidden");
+alert("Save failed");
 
-if(section==="tours")
-toursSection.classList.remove("hidden");
-
-if(section==="bookings"){
-bookingsSection.classList.remove("hidden");
-loadBookings();
 }
 
 };
 
-  async function loadBookings(){
+/* LOAD TOURS */
 
-const bookingList=document.getElementById("bookingList");
+async function loadTours(){
 
-bookingList.innerHTML="Loading...";
+list.innerHTML="";
 
-const q=query(
-collection(db,"bookings"),
-orderBy("createdAt","desc")
-);
+const snap=await getDocs(collection(db,"tour"));
 
-const snap=await getDocs(q);
+const tours=[];
 
-bookingList.innerHTML="";
+snap.forEach(d=>{
 
-snap.forEach(docSnap=>{
+tours.push({
 
-const b=docSnap.data();
+id:d.id,
 
-bookingList.innerHTML+=`
+...d.data()
 
-<div class="glass p-6 rounded-xl">
+});
 
-<div class="flex justify-between">
+});
 
-<div>
+totalTours.innerText=tours.length;
 
-<h2 class="text-xl font-bold">
-${b.name}
+recentTours.innerHTML="";
+
+tours.slice(-6).reverse().forEach(t=>{
+
+recentTours.innerHTML+=`
+
+<div class="glass p-3 rounded-xl">
+
+<img
+src="${t.image||""}"
+class="h-28 w-full object-cover rounded mb-3">
+
+<b>${t.title}</b>
+
+<p class="text-sm text-white/60">
+
+${t.category}
+
+</p>
+
+</div>
+
+`;
+
+});
+
+tours.reverse().forEach(t=>{
+
+list.innerHTML+=`
+
+<div class="glass p-4 rounded-xl">
+
+<img
+src="${t.image||""}"
+class="w-full h-40 rounded object-cover">
+
+<h2 class="font-bold mt-3">
+
+${t.title}
+
 </h2>
 
-<p>${b.bookingID}</p>
+<p class="text-white/60">
 
-<p>${b.tour}</p>
+$${t.price}
 
-<p>
-<b>$${b.paid}</b>
-/
-$${b.total}
 </p>
 
-<p>
-${b.paymentType}
-</p>
-
-</div>
-
-<div class="text-right">
-
-<span class="bg-yellow-500 px-3 py-1 rounded">
-
-${b.status}
-
-</span>
-
-</div>
-
-</div>
-
-<div class="flex gap-3 mt-5">
+<div class="flex gap-3 mt-4">
 
 <button
-onclick="approveBooking('${docSnap.id}')"
-class="bg-green-600 px-4 py-2 rounded">
+class="bg-blue-600 px-4 py-2 rounded"
+onclick='editTour(
+"${t.id}",
+"${encodeURIComponent(t.title||"")}",
+"${encodeURIComponent(t.description||"")}",
+"${t.image||""}",
+"${t.slug||""}",
+"${t.category||""}",
+"${t.price||0}"
+)'>
 
-Approve
+Edit
 
 </button>
 
 <button
-onclick="rejectBooking('${docSnap.id}')"
-class="bg-red-600 px-4 py-2 rounded">
+class="bg-red-600 px-4 py-2 rounded"
+onclick="deleteTour('${t.id}')">
 
-Reject
+Delete
 
 </button>
 
@@ -479,7 +550,168 @@ Reject
 
 }
 
-  window.approveBooking=async(id)=>{
+  /* DELETE TOUR */
+
+window.deleteTour = async(id)=>{
+
+if(!confirm("Delete this tour?")) return;
+
+await deleteDoc(doc(db,"tour",id));
+
+loadTours();
+
+};
+
+/* EDIT TOUR */
+
+window.editTour=(id,title,description,image,slug,category,price)=>{
+
+$("docId").value=id;
+$("title").value=decodeURIComponent(title);
+$("description").value=decodeURIComponent(description);
+
+$("slug").value=slug;
+$("category").value=category;
+$("price").value=price;
+
+imageURL=image;
+
+if(image){
+
+$("previewImg").src=image;
+$("previewImg").classList.remove("hidden");
+$("noPreview").style.display="none";
+
+}
+
+showSection("tours");
+
+};
+
+/* LOAD BOOKINGS */
+
+async function loadBookings(){
+
+const bookingList=$("bookingList");
+
+bookingList.innerHTML="Loading...";
+
+try{
+
+const q=query(
+collection(db,"bookings"),
+orderBy("createdAt","desc")
+);
+
+const snap=await getDocs(q);
+
+bookingList.innerHTML="";
+
+if(snap.empty){
+
+bookingList.innerHTML=`
+<div class="glass p-6 rounded-xl">
+No booking requests yet.
+</div>
+`;
+
+return;
+
+}
+
+snap.forEach(docSnap=>{
+
+const b=docSnap.data();
+
+bookingList.innerHTML+=`
+
+<div class="glass p-6 rounded-xl">
+
+<div class="flex justify-between">
+
+<div>
+
+<h2 class="text-2xl font-bold">
+${b.name||"Unknown"}
+</h2>
+
+<p class="text-white/60 mt-1">
+${b.bookingID||"-"}
+</p>
+
+<p class="mt-2">
+<b>Tour:</b> ${b.tour||"-"}
+</p>
+
+<p>
+<b>Total:</b> $${b.total||0}
+</p>
+
+<p>
+<b>Paid:</b> $${b.paid||0}
+</p>
+
+<p>
+<b>Payment:</b> ${b.paymentType||"-"}
+</p>
+
+<p>
+<b>Email:</b> ${b.email||"-"}
+</p>
+
+</div>
+
+<div>
+
+<span class="bg-yellow-500 text-black px-4 py-2 rounded-xl">
+
+${b.status||"Pending"}
+
+</span>
+
+</div>
+
+</div>
+
+<div class="flex gap-3 mt-6">
+
+<button
+onclick="approveBooking('${docSnap.id}')"
+class="bg-green-600 px-5 py-2 rounded-xl">
+
+Approve
+
+</button>
+
+<button
+onclick="rejectBooking('${docSnap.id}')"
+class="bg-red-600 px-5 py-2 rounded-xl">
+
+Reject
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+}catch(err){
+
+console.error(err);
+
+bookingList.innerHTML="Failed loading bookings.";
+
+}
+
+}
+
+/* APPROVE */
+
+window.approveBooking=async(id)=>{
 
 await updateDoc(doc(db,"bookings",id),{
 
@@ -490,9 +722,11 @@ paymentStatus:"Paid"
 
 loadBookings();
 
-}
+};
 
-  window.rejectBooking=async(id)=>{
+/* REJECT */
+
+window.rejectBooking=async(id)=>{
 
 await updateDoc(doc(db,"bookings",id),{
 
@@ -503,7 +737,52 @@ paymentStatus:"Rejected"
 
 loadBookings();
 
+};
+
+/* SHOW SECTIONS */
+
+window.showSection=(section)=>{
+
+$("dashboardSection").classList.add("hidden");
+$("toursSection").classList.add("hidden");
+$("bookingsSection").classList.add("hidden");
+
+if(section==="dashboard"){
+
+$("dashboardSection").classList.remove("hidden");
+
 }
+
+if(section==="tours"){
+
+$("toursSection").classList.remove("hidden");
+
+}
+
+if(section==="bookings"){
+
+$("bookingsSection").classList.remove("hidden");
+
+loadBookings();
+
+}
+
+};
+
+/* LOGOUT */
+
+window.logout=async()=>{
+
+await signOut(auth);
+
+location.replace("index.html");
+
+};
+
+/* INITIAL LOAD */
+
+loadTours();
+
 </script>
 
 </body>
