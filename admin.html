@@ -602,10 +602,10 @@ bookingList.innerHTML="Loading...";
 
 try{
 
-const q=query(
-collection(db,"payments"),
-where("status","==","Pending"),
-orderBy("createdAt","desc")
+const q = query(
+    collection(db,"payments"),
+    where("status","==","Pending Approval"),
+    orderBy("createdAt","desc")
 );
   
 const snap=await getDocs(q);
