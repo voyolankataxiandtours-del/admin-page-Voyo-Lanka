@@ -28,7 +28,7 @@ transition:.3s;
 transform:translateY(-5px);
 }
 </style>
-
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 
 <body class="flex">
@@ -270,13 +270,15 @@ getFirestore,
 collection,
 addDoc,
 getDocs,
+getDoc,
 deleteDoc,
 doc,
 setDoc,
 
 query,
 orderBy,
-updateDoc
+updateDoc,
+where
 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -295,6 +297,8 @@ authDomain:"voyo-lanka.firebaseapp.com",
 projectId:"voyo-lanka"
 
 });
+
+  emailjs.init("2zzy0wtyn_4qdRVf_");
 
 const db=getFirestore(app);
 const auth=getAuth(app);
@@ -598,11 +602,12 @@ bookingList.innerHTML="Loading...";
 
 try{
 
-const q = query(
-    collection(db,"payments"),
-    orderBy("createdAt","desc")
+const q=query(
+collection(db,"payments"),
+where("status","==","Pending"),
+orderBy("createdAt","desc")
 );
-
+  
 const snap=await getDocs(q);
 
 bookingList.innerHTML="";
@@ -723,7 +728,165 @@ bookingList.innerHTML="Failed loading bookings.";
 window.viewReceipt = function(url){
     window.open(url, "_blank");
 }
+window.approvePayment = async(id)=>{
 
+try{
+
+// Read payment document
+const paymentRef = doc(db,"payments",id);
+
+const paymentSnap = await getDoc(paymentRef);
+
+if(!paymentSnap.exists()){
+
+alert("Payment not found.");
+
+return;
+
+}
+
+const payment = paymentSnap.data();
+
+
+// Create booking
+
+await setDoc(
+
+doc(db,"bookings",id),
+
+{
+
+...payment,
+
+status:"Confirmed",
+
+paymentStatus:"Paid",
+
+  paymentApproved:true,
+
+approvedAt:new Date()
+
+}
+
+);
+
+
+// Update payment status
+
+await updateDoc(
+
+paymentRef,
+
+{
+
+status:"Approved",
+  
+approvedAt:new Date(),
+  bookingCreated:new Date()
+
+}
+
+);
+
+  await emailjs.send(
+"service_i35yoq6",
+"template_qkbxxvs",
+{
+    name: payment.name,
+    email: payment.email,
+    bookingReference: payment.bookingReference || payment.bookingID,
+    tour: payment.tour,
+    travelDate: payment.travelDate,
+    amount: payment.amount,
+    year: new Date().getFullYear()
+});
+
+alert("✅ Booking confirmed successfully.");
+
+loadBookings();
+
+}catch(err){
+
+console.error(err);
+
+alert("Approval failed.");
+
+}
+
+};
+
+
+  window.rejectPayment = async(id)=>{
+
+const reason = prompt(
+"Why are you rejecting this payment?"
+);
+
+if(reason===null) return;
+
+if(reason.trim()===""){
+
+alert("Please enter a reason.");
+
+return;
+
+}
+
+try{
+
+const paymentRef = doc(db,"payments",id);
+
+const paymentSnap = await getDoc(paymentRef);
+
+if(!paymentSnap.exists()){
+
+    alert("Payment not found.");
+
+    return;
+
+}
+
+const payment = paymentSnap.data();
+
+await updateDoc(paymentRef,{
+
+    status:"Rejected",
+
+    rejectionReason:reason,
+
+    rejectedAt:new Date()
+
+});
+
+
+await emailjs.send(
+"service_i35yoq6",
+"template_hkj5bt3",
+{
+    name: payment.name,
+    email: payment.email,
+    bookingReference: payment.bookingReference || payment.bookingID,
+    tour: payment.tour,
+    travelDate: payment.travelDate,
+    amount: payment.amount,
+    reason: reason,
+    year: new Date().getFullYear()
+});
+
+// Send email
+alert("❌ Payment rejected.");
+
+loadBookings();
+
+}catch(err){
+
+console.error(err);
+
+alert("Failed.");
+
+}
+
+}
 /* SHOW SECTIONS */
 
 window.showSection=(section)=>{
