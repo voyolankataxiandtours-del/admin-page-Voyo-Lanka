@@ -707,6 +707,7 @@ class="bg-red-600 px-5 py-2 rounded-xl">
 `;
 
 });
+  
 
 }catch(err){
 
@@ -718,35 +719,10 @@ bookingList.innerHTML="Failed loading bookings.";
 
 }
 
-/* APPROVE */
 
-window.approveBooking=async(id)=>{
-
-await updateDoc(doc(db,"bookings",id),{
-
-status:"Confirmed",
-paymentStatus:"Paid"
-
-});
-
-loadBookings();
-
-};
-
-/* REJECT */
-
-window.rejectBooking=async(id)=>{
-
-await updateDoc(doc(db,"bookings",id),{
-
-status:"Rejected",
-paymentStatus:"Rejected"
-
-});
-
-loadBookings();
-
-};
+window.viewReceipt = function(url){
+    window.open(url, "_blank");
+}
 
 /* SHOW SECTIONS */
 
