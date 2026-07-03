@@ -117,9 +117,9 @@ id="bookingsSection"
 class="hidden">
 
 <h2 class="text-3xl font-black mb-6">
-Customer Booking Requests
+💳 Payment Approval Queue
 </h2>
-
+  
 <div
 id="bookingList"
 class="space-y-5">
@@ -621,42 +621,43 @@ return;
 
 snap.forEach(docSnap=>{
 
-const b=docSnap.data();
+const p = docSnap.data();
 
-bookingList.innerHTML+=`
+bookingList.innerHTML += `
 
-<div class="glass p-6 rounded-xl">
+<div class="glass rounded-2xl p-6">
 
-<div class="flex justify-between">
+<div class="flex justify-between items-start">
 
 <div>
 
 <h2 class="text-2xl font-bold">
-${b.name||"Unknown"}
+${p.name}
 </h2>
 
 <p class="text-white/60 mt-1">
-${b.bookingID||"-"}
+Reference:
+<b>${p.bookingReference || p.bookingID}</b>
 </p>
 
-<p class="mt-2">
-<b>Tour:</b> ${b.tour||"-"}
-</p>
-
-<p>
-<b>Total:</b> $${b.total||0}
+<p class="mt-3">
+🧳 ${p.tour}
 </p>
 
 <p>
-<b>Paid:</b> $${b.paid||0}
+📧 ${p.email}
 </p>
 
 <p>
-<b>Payment:</b> ${b.paymentType||"-"}
+💰 $${p.amount}
 </p>
 
 <p>
-<b>Email:</b> ${b.email||"-"}
+💳 ${p.paymentMethod}
+</p>
+
+<p>
+📅 ${p.travelDate || "-"}
 </p>
 
 </div>
@@ -665,7 +666,7 @@ ${b.bookingID||"-"}
 
 <span class="bg-yellow-500 text-black px-4 py-2 rounded-xl">
 
-${b.status||"Pending"}
+${p.status}
 
 </span>
 
@@ -673,21 +674,29 @@ ${b.status||"Pending"}
 
 </div>
 
-<div class="flex gap-3 mt-6">
+<div class="flex flex-wrap gap-3 mt-6">
 
 <button
-onclick="approveBooking('${docSnap.id}')"
-class="bg-green-600 px-5 py-2 rounded-xl">
+onclick="viewReceipt('${p.receiptURL}')"
+class="bg-blue-600 px-5 py-2 rounded-xl">
 
-Approve
+👁 View Receipt
 
 </button>
 
 <button
-onclick="rejectBooking('${docSnap.id}')"
+onclick="approvePayment('${docSnap.id}')"
+class="bg-green-600 px-5 py-2 rounded-xl">
+
+✅ Approve
+
+</button>
+
+<button
+onclick="rejectPayment('${docSnap.id}')"
 class="bg-red-600 px-5 py-2 rounded-xl">
 
-Reject
+❌ Reject
 
 </button>
 
