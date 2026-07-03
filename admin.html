@@ -598,9 +598,9 @@ bookingList.innerHTML="Loading...";
 
 try{
 
-const q=query(
-collection(db,"bookings"),
-orderBy("createdAt","desc")
+const q = query(
+    collection(db,"payments"),
+    orderBy("createdAt","desc")
 );
 
 const snap=await getDocs(q);
