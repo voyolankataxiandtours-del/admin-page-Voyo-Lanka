@@ -818,77 +818,94 @@ alert("Approval failed.");
 };
 
 
-  window.rejectPayment = async(id)=>{
+ let rejectPaymentId = null;
 
-const reason = prompt(
-"Why are you rejecting this payment?"
-);
+window.rejectPayment = function(id){
 
-if(reason===null) return;
+    rejectPaymentId = id;
 
-if(reason.trim()===""){
+    $("rejectReason").value = "";
 
-alert("Please enter a reason.");
+    $("rejectModal").classList.remove("hidden");
+    $("rejectModal").classList.add("flex");
 
-return;
+};
 
-}
+window.closeRejectModal = function(){
 
-try{
+    $("rejectModal").classList.remove("flex");
+    $("rejectModal").classList.add("hidden");
 
-const paymentRef = doc(db,"payments",id);
+};
 
-const paymentSnap = await getDoc(paymentRef);
+window.confirmReject = async function(){
 
-if(!paymentSnap.exists()){
+    const reason = $("rejectReason").value.trim();
 
-    alert("Payment not found.");
+    if(!reason){
 
-    return;
+        alert("Please enter a rejection reason.");
 
-}
+        return;
 
-const payment = paymentSnap.data();
+    }
 
-await updateDoc(paymentRef,{
+    try{
 
-    status:"Rejected",
+        const paymentRef = doc(db,"payments",rejectPaymentId);
 
-    rejectionReason:reason,
+        const paymentSnap = await getDoc(paymentRef);
 
-    rejectedAt:new Date()
+        if(!paymentSnap.exists()){
 
-});
+            alert("Payment not found.");
 
+            return;
 
-await emailjs.send(
-"service_i35yoq6",
-"template_hkj5bt3",
-{
-    name: payment.name,
-    email: payment.email,
-    bookingReference: payment.bookingReference || payment.bookingID,
-    tour: payment.tour,
-    travelDate: payment.travelDate,
-    amount: payment.amount,
-    reason: reason,
-    year: new Date().getFullYear()
-});
+        }
 
-// Send email
-alert("❌ Payment rejected.");
+        const payment = paymentSnap.data();
 
-loadBookings();
+        await updateDoc(paymentRef,{
 
-}catch(err){
+            status:"Rejected",
 
-console.error(err);
+            rejectionReason:reason,
 
-alert("Failed.");
+            rejectedAt:new Date()
 
-}
+        });
 
-}
+        await emailjs.send(
+            "service_i35yoq6",
+            "template_hkj5bt3",
+            {
+                name: payment.name,
+                email: payment.email,
+                bookingReference: payment.bookingReference || payment.bookingID,
+                tour: payment.tour,
+                travelDate: payment.travelDate,
+                amount: payment.amount,
+                reason: reason,
+                year: new Date().getFullYear()
+            }
+        );
+
+        closeRejectModal();
+
+        alert("❌ Payment rejected.");
+
+        loadBookings();
+
+    }catch(err){
+
+        console.error(err);
+
+        alert("Failed.");
+
+    }
+
+};
 /* SHOW SECTIONS */
 
 window.showSection=(section)=>{
@@ -934,6 +951,41 @@ location.replace("index.html");
 loadTours();
 
 </script>
+<div id="rejectModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
 
+    <div class="glass p-6 rounded-2xl w-[500px] max-w-[90%]">
+
+        <h2 class="text-2xl font-bold mb-4">
+            Reject Payment
+        </h2>
+
+        <p class="text-white/70 mb-3">
+            Please enter the reason for rejecting this payment.
+        </p>
+
+        <textarea
+            id="rejectReason"
+            class="w-full h-40 p-3 rounded bg-white/10 border border-white/20"
+            placeholder="Type rejection reason..."></textarea>
+
+        <div class="flex justify-end gap-3 mt-5">
+
+            <button
+                onclick="closeRejectModal()"
+                class="bg-gray-600 px-5 py-2 rounded">
+                Cancel
+            </button>
+
+            <button
+                onclick="confirmReject()"
+                class="bg-red-600 px-5 py-2 rounded">
+                Reject Payment
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 </body>
 </html>
