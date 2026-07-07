@@ -520,9 +520,33 @@ $${t.price}
 <div class="flex gap-3 mt-4">
 
 <button
+
 class="bg-blue-600 px-4 py-2 rounded"
-onclick="editTour('${t.id}')">
+
+onclick='editTour(
+
+"${t.id}",
+
+"${encodeURIComponent(t.title||"")}",
+
+"${encodeURIComponent((t.description || "").replace(/'/g, "\\'"))}",
+
+"${t.image||""}",
+
+"${t.slug||""}",
+
+"${t.category||""}",
+
+"${t.price||0}"
+
+)'>
+
+
+
 Edit
+
+
+
 </button>
 
 <button
