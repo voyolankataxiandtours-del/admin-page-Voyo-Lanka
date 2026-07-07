@@ -520,16 +520,10 @@ $${t.price}
 <div class="flex gap-3 mt-4">
 
 <button
-
 class="bg-blue-600 px-4 py-2 rounded"
-
 onclick="editTour('${t.id}')">
 
-
-
 Edit
-
-
 
 </button>
 
@@ -569,12 +563,42 @@ window.editTour = async(id)=>{
 
     const snap = await getDoc(doc(db,"tour",id));
 
+    if(!snap.exists()){
+        alert("Tour not found.");
+        return;
+    }
+
     const t = snap.data();
 
-    console.log(t);   // <-- IMPORTANT
+    $("docId").value = id;
+    $("title").value = t.title || "";
+    $("description").value = t.description || "";
+    $("slug").value = t.slug || "";
+    $("category").value = t.category || "Day Tour";
+    $("price").value = t.price || "";
+    $("area").value = t.area || "";
+    $("tourType").value = t.tourType || "single";
+    $("routeFrom").value = t.routeFrom || "";
+    $("routeTo").value = t.routeTo || "";
+
+    imageURL = t.image || "";
+
+    if(imageURL){
+
+        $("previewImg").src = imageURL;
+        $("previewImg").classList.remove("hidden");
+        $("noPreview").style.display = "none";
+
+    }else{
+
+        $("previewImg").classList.add("hidden");
+        $("noPreview").style.display = "block";
+
+    }
+
+    showSection("tours");
 
 };
-
 /* LOAD BOOKINGS */
 
 async function loadBookings(){
