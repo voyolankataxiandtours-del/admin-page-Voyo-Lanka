@@ -521,18 +521,8 @@ $${t.price}
 
 <button
 class="bg-blue-600 px-4 py-2 rounded"
-onclick='editTour(
-"${t.id}",
-"${encodeURIComponent(t.title||"")}",
-"${encodeURIComponent((t.description || "").replace(/'/g, "\\'"))}",
-"${t.image||""}",
-"${t.slug||""}",
-"${t.category||""}",
-"${t.price||0}"
-)'>
-
+onclick="editTour('${t.id}')">
 Edit
-
 </button>
 
 <button
