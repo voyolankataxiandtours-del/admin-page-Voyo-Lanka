@@ -529,7 +529,7 @@ onclick='editTour(
 
 "${encodeURIComponent(t.title||"")}",
 
-"${encodeURIComponent((t.description || "").replace(/'/g, "\\'"))}",
+"${encodeURIComponent(t.description || "").replace(/"/g,"&quot;")}",
 
 "${t.image||""}",
 
