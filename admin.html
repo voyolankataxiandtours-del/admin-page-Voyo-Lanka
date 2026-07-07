@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>D&D Tours Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
@@ -525,7 +524,7 @@ class="bg-blue-600 px-4 py-2 rounded"
 onclick='editTour(
 "${t.id}",
 "${encodeURIComponent(t.title||"")}",
-"${encodeURIComponent(t.description||"")}",
+"${encodeURIComponent((t.description || "").replace(/'/g, "\\'"))}",
 "${t.image||""}",
 "${t.slug||""}",
 "${t.category||""}",
