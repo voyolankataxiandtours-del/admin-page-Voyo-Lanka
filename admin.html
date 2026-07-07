@@ -523,23 +523,7 @@ $${t.price}
 
 class="bg-blue-600 px-4 py-2 rounded"
 
-onclick='editTour(
-
-"${t.id}",
-
-"${encodeURIComponent(t.title||"")}",
-
-"${encodeURIComponent(t.description || "").replace(/"/g,"&quot;")}",
-
-"${t.image||""}",
-
-"${t.slug||""}",
-
-"${t.category||""}",
-
-"${t.price||0}"
-
-)'>
+onclick="editTour('${t.id}')">
 
 
 
@@ -581,27 +565,13 @@ loadTours();
 
 /* EDIT TOUR */
 
-window.editTour=(id,title,description,image,slug,category,price)=>{
+window.editTour = async(id)=>{
 
-$("docId").value=id;
-$("title").value=decodeURIComponent(title);
-$("description").value=decodeURIComponent(description);
+    const snap = await getDoc(doc(db,"tour",id));
 
-$("slug").value=slug;
-$("category").value=category;
-$("price").value=price;
+    const t = snap.data();
 
-imageURL=image;
-
-if(image){
-
-$("previewImg").src=image;
-$("previewImg").classList.remove("hidden");
-$("noPreview").style.display="none";
-
-}
-
-showSection("tours");
+    console.log(t);   // <-- IMPORTANT
 
 };
 
