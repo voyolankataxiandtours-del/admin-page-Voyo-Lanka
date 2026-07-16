@@ -238,7 +238,117 @@ Image Preview
 </span>
 
 </div>
+<!-- ================= TOUR DETAILS ================= -->
 
+<hr class="border-white/10 my-6">
+
+<h3 class="text-xl font-bold mb-4">
+Tour Detail Page
+</h3>
+
+<textarea
+id="about"
+placeholder="Full Tour Description"
+class="w-full mb-3 p-3 rounded bg-white/10 h-40"></textarea>
+
+<div class="grid grid-cols-2 gap-3">
+
+<input
+id="duration"
+placeholder="Duration (Example: 1 Day)"
+class="p-3 rounded bg-white/10">
+
+<input
+id="location"
+placeholder="Location"
+class="p-3 rounded bg-white/10">
+
+</div>
+
+<input
+id="map"
+placeholder="Google Maps Embed URL"
+class="w-full mt-3 p-3 rounded bg-white/10">
+
+<hr class="border-white/10 my-6">
+
+<h3 class="text-xl font-bold mb-4">
+Highlights
+</h3>
+
+<textarea
+id="highlights"
+placeholder="One highlight per line&#10;Temple of Tooth&#10;Tea Factory&#10;Botanical Garden"
+class="w-full h-36 p-3 rounded bg-white/10"></textarea>
+
+<hr class="border-white/10 my-6">
+
+<h3 class="text-xl font-bold mb-4">
+Tour Includes
+</h3>
+
+<textarea
+id="includes"
+placeholder="One item per line"
+class="w-full h-32 p-3 rounded bg-white/10"></textarea>
+
+<hr class="border-white/10 my-6">
+
+<h3 class="text-xl font-bold mb-4">
+Tour Excludes
+</h3>
+
+<textarea
+id="excludes"
+placeholder="One item per line"
+class="w-full h-32 p-3 rounded bg-white/10"></textarea>
+
+<hr class="border-white/10 my-6">
+
+<h3 class="text-xl font-bold mb-4">
+Gallery Images
+</h3>
+
+<input
+type="file"
+id="galleryFiles"
+multiple
+class="mb-3">
+
+<button
+onclick="uploadGallery()"
+class="bg-purple-600 w-full py-3 rounded-xl mb-4">
+
+Upload Gallery Images
+
+</button>
+
+<div
+id="galleryPreview"
+class="grid grid-cols-3 gap-3 mb-4">
+
+</div>
+
+<textarea
+id="gallery"
+placeholder="Gallery URLs (Auto Filled)"
+class="w-full h-32 p-3 rounded bg-white/10"></textarea>
+
+<h3 class="text-xl font-bold mb-4">
+Tour Itinerary
+</h3>
+
+<textarea
+id="itinerary"
+placeholder="Example:
+
+Temple of Tooth|Visit the sacred temple
+
+Kandy Lake|Relax beside the lake
+
+Tea Factory|Learn how Ceylon Tea is produced"
+class="w-full h-56 p-3 rounded bg-white/10"></textarea>
+  
 <button
 onclick="saveTour()"
 class="bg-white text-black font-bold w-full py-3 rounded-xl mt-5">
@@ -303,6 +413,7 @@ const db=getFirestore(app);
 const auth=getAuth(app);
 
 let imageURL="";
+  let galleryImages=[];
 
 const $=(id)=>document.getElementById(id);
 
@@ -334,6 +445,23 @@ $("area").value="";
 $("routeFrom").value="";
 $("routeTo").value="";
 $("tourType").value="single";
+  $("about").value="";
+
+$("duration").value="";
+
+$("location").value="";
+
+$("map").value="";
+
+$("highlights").value="";
+
+$("includes").value="";
+
+$("excludes").value="";
+
+$("gallery").value="";
+
+$("itinerary").value="";
 
 imageURL="";
 
@@ -341,6 +469,10 @@ $("status").innerText="";
 
 $("previewImg").classList.add("hidden");
 $("noPreview").style.display="block";
+
+  galleryImages=[];
+
+$("galleryPreview").innerHTML="";
 
 };
 
@@ -354,6 +486,9 @@ if(!file){
 alert("Select an image.");
 return;
 }
+
+
+  
 
 const fd=new FormData();
 
@@ -387,6 +522,65 @@ alert("Upload failed.");
 
 };
 
+  /* ================= GALLERY UPLOAD ================= */
+
+window.uploadGallery = async () => {
+
+    const files = $("galleryFiles").files;
+
+    if (files.length === 0) {
+        alert("Please select gallery images.");
+        return;
+    }
+
+    galleryImages = [];
+
+    $("galleryPreview").innerHTML = "";
+
+    for (const file of files) {
+
+        const fd = new FormData();
+
+        fd.append("file", file);
+        fd.append("upload_preset", "tour_upload");
+
+        try {
+
+            const res = await fetch(
+                "https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
+                {
+                    method: "POST",
+                    body: fd
+                }
+            );
+
+            const data = await res.json();
+
+            galleryImages.push(data.secure_url);
+
+            $("galleryPreview").innerHTML += `
+                <img
+                    src="${data.secure_url}"
+                    class="w-full h-24 object-cover rounded-xl border border-white/10">
+            `;
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert("One image failed to upload.");
+
+        }
+
+    }
+
+    $("gallery").value = galleryImages.join("\n");
+
+    $("status").innerText = "✅ Gallery Uploaded";
+
+};
+  
+
 /* SAVE TOUR */
 
 window.saveTour=async()=>{
@@ -405,11 +599,55 @@ image:imageURL,
 area:$("area").value,
 
 tourType:$("tourType").value,
+
 routeFrom:$("routeFrom").value,
-routeTo:$("routeTo").value
+
+routeTo:$("routeTo").value,
+
+about:$("about").value,
+
+duration:$("duration").value,
+
+location:$("location").value,
+
+map:$("map").value,
+
+highlights:$("highlights").value
+.split("\n")
+.filter(x=>x.trim()!=""),
+
+includes:$("includes").value
+.split("\n")
+.filter(x=>x.trim()!=""),
+
+excludes:$("excludes").value
+.split("\n")
+.filter(x=>x.trim()!=""),
+
+gallery:galleryImages.length
+?galleryImages
+:$("gallery").value
+.split("\n")
+.filter(x=>x.trim()!=""),
+
+itinerary:$("itinerary").value
+.split("\n")
+.filter(x=>x.trim()!="")
+.map(line=>{
+
+const parts=line.split("|");
+
+return{
+
+title:parts[0]||"",
+
+description:parts[1]||""
 
 };
 
+})
+
+};
 const id=$("docId").value;
 
 try{
@@ -580,6 +818,40 @@ window.editTour = async(id)=>{
     $("tourType").value = t.tourType || "single";
     $("routeFrom").value = t.routeFrom || "";
     $("routeTo").value = t.routeTo || "";
+  $("about").value = t.about || "";
+
+$("duration").value = t.duration || "";
+
+$("location").value = t.location || "";
+
+$("map").value = t.map || "";
+
+$("highlights").value = (t.highlights || []).join("\n");
+
+$("includes").value = (t.includes || []).join("\n");
+
+$("excludes").value = (t.excludes || []).join("\n");
+
+$("gallery").value = (t.gallery || []).join("\n");
+  galleryImages=t.gallery||[];
+
+$("galleryPreview").innerHTML="";
+
+galleryImages.forEach(img=>{
+
+$("galleryPreview").innerHTML+=`
+
+<img
+src="${img}"
+class="rounded-xl h-24 w-full object-cover">
+
+`;
+
+});
+
+$("itinerary").value = (t.itinerary || [])
+.map(i => `${i.title}|${i.description}`)
+.join("\n");
 
     imageURL = t.image || "";
 
