@@ -556,13 +556,9 @@ window.uploadGallery = async () => {
 
             const data = await res.json();
 
-            galleryImages.push(data.secure_url);
+     galleryImages.push(data.secure_url);
 
-            $("galleryPreview").innerHTML += `
-                <img
-                    src="${data.secure_url}"
-                    class="w-full h-24 object-cover rounded-xl border border-white/10">
-            `;
+renderGallery();
 
         } catch (err) {
 
@@ -579,7 +575,48 @@ window.uploadGallery = async () => {
     $("status").innerText = "✅ Gallery Uploaded";
 
 };
-  
+
+  window.removeGalleryImage = (index) => {
+
+    if(!confirm("Remove this image?")) return;
+
+    galleryImages.splice(index,1);
+
+  renderGallery();
+
+    renderGallery();
+
+};
+
+  function renderGallery(){
+
+    $("galleryPreview").innerHTML = "";
+
+    galleryImages.forEach((img,index)=>{
+
+        $("galleryPreview").innerHTML += `
+
+        <div class="relative">
+
+            <img
+                src="${img}"
+                class="rounded-xl h-24 w-full object-cover">
+
+            <button
+                onclick="removeGalleryImage(${index})"
+                class="absolute top-1 right-1 bg-red-600 text-white w-6 h-6 rounded-full text-sm">
+
+                ✕
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+}
 
 /* SAVE TOUR */
 
@@ -833,22 +870,9 @@ $("includes").value = (t.includes || []).join("\n");
 $("excludes").value = (t.excludes || []).join("\n");
 
 $("gallery").value = (t.gallery || []).join("\n");
-  galleryImages=t.gallery||[];
+galleryImages = t.gallery || [];
 
-$("galleryPreview").innerHTML="";
-
-galleryImages.forEach(img=>{
-
-$("galleryPreview").innerHTML+=`
-
-<img
-src="${img}"
-class="rounded-xl h-24 w-full object-cover">
-
-`;
-
-});
-
+renderGallery();
 $("itinerary").value = (t.itinerary || [])
 .map(i => `${i.title}|${i.description}`)
 .join("\n");
