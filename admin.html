@@ -30,11 +30,13 @@ transform:translateY(-5px);
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 
-<body class="flex">
+<body class="bg-black text-white overflow-x-hidden">
+
+<div class="flex flex-col md:flex-row">
 
 <!-- SIDEBAR -->
 
-<div class="w-60 h-screen glass p-5 hidden md:block">
+<div class="w-full md:w-60 md:h-screen glass p-5">
 
 <h1 class="text-xl font-bold mb-8">
 Voyo-Lanka
@@ -66,9 +68,9 @@ Logout
 
 <!-- MAIN -->
 
-<div class="flex-1 p-6">
+<div class="flex-1 p-4 md:p-6">
 
-<div class="glass rounded-xl p-5 flex justify-between items-center mb-6">
+<div class="glass rounded-xl p-4 md:p-5 flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
 
 <h1 class="text-2xl font-bold">
 Admin Dashboard
@@ -86,7 +88,7 @@ class="bg-green-600 px-4 py-2 rounded-xl">
 
 <div id="dashboardSection">
 
-<div class="glass rounded-xl p-5 w-56 mb-6">
+<div class="glass rounded-xl p-5 w-full md:w-56 mb-6">
 
 <p class="text-white/60">
 Total Tours
@@ -104,7 +106,7 @@ Recent Tours
 
 <div
 id="recentTours"
-class="grid md:grid-cols-3 gap-4">
+class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 </div>
 
 </div>
@@ -133,7 +135,7 @@ Loading...
 
 <div
 id="toursSection"
-class="hidden grid md:grid-cols-2 gap-6">
+class="hidden grid grid-cols-1 xl:grid-cols-2 gap-6">
 
 <!-- FORM -->
 
@@ -251,7 +253,7 @@ id="about"
 placeholder="Full Tour Description"
 class="w-full mb-3 p-3 rounded bg-white/10 h-40"></textarea>
 
-<div class="grid grid-cols-2 gap-3">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 
 <input
 id="duration"
@@ -325,7 +327,7 @@ Upload Gallery Images
 
 <div
 id="galleryPreview"
-class="grid grid-cols-3 gap-3 mb-4">
+class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
 
 </div>
 
@@ -754,7 +756,7 @@ recentTours.innerHTML+=`
 
 <img
 src="${t.image||""}"
-class="h-28 w-full object-cover rounded mb-3">
+class="h-40 md:h-28 w-full object-cover rounded mb-3">
 
 <b>${t.title}</b>
 
@@ -778,7 +780,7 @@ list.innerHTML+=`
 
 <img
 src="${t.image||""}"
-class="w-full h-40 rounded object-cover">
+class="w-full h-52 md:h-40 rounded object-cover">
 
 <h2 class="font-bold mt-3">
 
@@ -792,7 +794,7 @@ $${t.price}
 
 </p>
 
-<div class="flex gap-3 mt-4">
+<div class="flex flex-col sm:flex-row gap-3 mt-4">
 
 <button
 class="bg-blue-600 px-4 py-2 rounded"
@@ -935,7 +937,7 @@ bookingList.innerHTML += `
 
 <div class="glass rounded-2xl p-6">
 
-<div class="flex justify-between items-start">
+<div class="flex flex-col md:flex-row justify-between items-start gap-5">
 
 <div>
 
@@ -982,7 +984,7 @@ ${p.status}
 
 </div>
 
-<div class="flex flex-wrap gap-3 mt-6">
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
 
 <button
 onclick="viewReceipt('${p.receiptURL}')"
@@ -1256,7 +1258,7 @@ loadTours();
 </script>
 <div id="rejectModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
 
-    <div class="glass p-6 rounded-2xl w-[500px] max-w-[90%]">
+   <div class="glass p-6 rounded-2xl w-[95%] md:w-[500px]">
 
         <h2 class="text-2xl font-bold mb-4">
             Reject Payment
