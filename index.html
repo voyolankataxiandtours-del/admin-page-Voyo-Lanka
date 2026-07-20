@@ -94,7 +94,20 @@ window.login = async function () {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
+
+const user = auth.currentUser;
+
+const superAdminEmail = "penumaorg@gmail.com";
+
+if(user.email.toLowerCase() === superAdminEmail.toLowerCase()){
+
+    window.location.href = "./super-admin.html";
+
+}else{
+
     window.location.href = "./admin.html";
+
+}
   } catch (err) {
     status.innerText = "Invalid email or password";
   }
