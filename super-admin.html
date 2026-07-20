@@ -419,14 +419,26 @@ let imageURL="";
 
 const $=(id)=>document.getElementById(id);
 
-onAuthStateChanged(auth,user=>{
+const superAdminEmail = "penumaorg@gmail.com";
 
-if(!user){
+onAuthStateChanged(auth,(user)=>{
 
-location.replace("index.html");
+    if(!user){
 
-}
+        location.replace("index.html");
+        return;
 
+    }
+
+    if(user.email.toLowerCase() !== superAdminEmail.toLowerCase()){
+
+        alert("Access Denied");
+
+        location.replace("admin.html");
+
+    }
+
+});
 });
 
 history.pushState(null,"",location.href);
