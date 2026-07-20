@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Voyo-Lanka Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body{
+background:radial-gradient(circle at top,#111,#000);
+color:white;
+font-family:system-ui;
+}
+
+.glass{
+background:rgba(255,255,255,.06);
+backdrop-filter:blur(18px);
+border:1px solid rgba(255,255,255,.1);
+}
+
+.card{
+transition:.3s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+
+<body class="bg-black text-white overflow-x-hidden">
+
+<div class="flex flex-col md:flex-row">
+
+<!-- SIDEBAR -->
+
+<div class="w-full md:w-60 md:h-screen glass p-5">
+
+<h1 class="text-xl font-bold mb-8">
+Voyo-Lanka
+</h1>
+
+<button onclick="showSection('dashboard')" class="block w-full text-left mb-3">
+📊 Dashboard
+</button>
+
+<button onclick="showSection('tours')" class="block w-full text-left mb-3">
+🧳 Tours
+</button>
+
+<button onclick="newTour()" class="block w-full text-left mb-3 text-green-400">
+➕ Add Tour
+</button>
+
+<button onclick="showSection('bookings')" class="block w-full text-left mb-3">
+📅 Customer Bookings
+</button>
+
+<hr class="border-white/10 my-5">
+
+<button onclick="logout()" class="bg-red-600 w-full py-2 rounded-xl">
+Logout
+</button>
+
+</div>
+
+<!-- MAIN -->
+
+<div class="flex-1 p-4 md:p-6">
+
+<div class="glass rounded-xl p-4 md:p-5 flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+
+<h1 class="text-2xl font-bold">
+Admin Dashboard
+</h1>
+
+<button
+onclick="newTour()"
+class="bg-green-600 px-4 py-2 rounded-xl">
++ Add Tour
+</button>
+
+</div>
+
+<!-- DASHBOARD -->
+
+<div id="dashboardSection">
+
+<div class="glass rounded-xl p-5 w-full md:w-56 mb-6">
+
+<p class="text-white/60">
+Total Tours
+</p>
+
+<h2 id="totalTours" class="text-4xl font-black mt-2">
+0
+</h2>
+
+</div>
+
+<h2 class="font-bold text-xl mb-4">
+Recent Tours
+</h2>
+
+<div
+id="recentTours"
+class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+</div>
+
+</div>
+
+<!-- BOOKINGS -->
+
+<div
+id="bookingsSection"
+class="hidden">
+
+<h2 class="text-3xl font-black mb-6">
+💳 Payment Approval Queue
+</h2>
+  
+<div
+id="bookingList"
+class="space-y-5">
+
+Loading...
+
+</div>
+
+</div>
+
+<!-- TOURS -->
+
+<div
+id="toursSection"
+class="hidden grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+<!-- FORM -->
+
+<div class="glass rounded-xl p-5">
+
+<h2 class="text-xl font-bold mb-4">
+Add / Edit Tour
+</h2>
+
+<input
+id="docId"
+placeholder="Document ID"
+class="w-full mb-3 p-3 rounded bg-white/10">
+
+<input
+id="title"
+placeholder="Tour Title"
+class="w-full mb-3 p-3 rounded bg-white/10">
+
+<textarea
+id="description"
+placeholder="Description"
+class="w-full mb-3 p-3 rounded bg-white/10"></textarea>
+
+<select
+id="category"
+class="w-full mb-3 p-3 rounded text-black">
+
+<option>Day Tour</option>
+<option>Round Tour</option>
+<option>Tailor Made</option>
+
+</select>
+
+<input
+id="price"
+type="number"
+placeholder="Price USD"
+class="w-full mb-3 p-3 rounded bg-white/10">
+
+<input
+id="slug"
+placeholder="Slug"
+class="w-full mb-3 p-3 rounded bg-white/10">
+
+<input
+id="area"
+placeholder="Area"
+class="w-full mb-3 p-3 rounded bg-white/10">
+
+<select
+id="tourType"
+class="w-full mb-3 p-3 rounded text-black">
+
+<option value="single">
+Single Area Tour
+</option>
+
+<option value="route">
+Route Tour
+</option>
+
+</select>
+
+<input
+id="routeFrom"
+placeholder="Route From"
+class="w-full mb-3 p-3 rounded bg-white/10">
+
+<input
+id="routeTo"
+placeholder="Route To"
+class="w-full mb-3 p-3 rounded bg-white/10">
+
+<input
+type="file"
+id="imageFile"
+class="mb-4">
+
+<button
+onclick="uploadImage()"
+class="bg-blue-600 w-full py-3 rounded-xl">
+
+Upload Image
+
+</button>
+
+<p
+id="status"
+class="text-green-400 mt-3">
+</p>
+
+<div
+class="h-44 mt-5 rounded-xl bg-white/5 flex justify-center items-center overflow-hidden">
+
+<img
+id="previewImg"
+class="hidden w-full h-full object-cover">
+
+<span id="noPreview">
+Image Preview
+</span>
+
+</div>
+<!-- ================= TOUR DETAILS ================= -->
+
+<hr class="border-white/10 my-6">
+
+<h3 class="text-xl font-bold mb-4">
+Tour Detail Page
+</h3>
+
+<textarea
+id="about"
+placeholder="Full Tour Description"
+class="w-full mb-3 p-3 rounded bg-white/10 h-40"></textarea>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+<input
+id="duration"
+placeholder="Duration (Example: 1 Day)"
+class="p-3 rounded bg-white/10">
+
+<input
+id="location"
+placeholder="Location"
+class="p-3 rounded bg-white/10">
+
+</div>
+
+<input
+id="map"
+placeholder="Google Maps Embed URL"
+class="w-full mt-3 p-3 rounded bg-white/10">
+
+<hr class="border-white/10 my-6">
+
+<h3 class="text-xl font-bold mb-4">
+Highlights
+</h3>
+
+<textarea
+id="highlights"
+placeholder="One highlight per line&#10;Temple of Tooth&#10;Tea Factory&#10;Botanical Garden"
+class="w-full h-36 p-3 rounded bg-white/10"></textarea>
+
+<hr class="border-white/10 my-6">
+
+<h3 class="text-xl font-bold mb-4">
+Tour Includes
+</h3>
+
+<textarea
+id="includes"
+placeholder="One item per line"
+class="w-full h-32 p-3 rounded bg-white/10"></textarea>
+
+<hr class="border-white/10 my-6">
+
+<h3 class="text-xl font-bold mb-4">
+Tour Excludes
+</h3>
+
+<textarea
+id="excludes"
+placeholder="One item per line"
+class="w-full h-32 p-3 rounded bg-white/10"></textarea>
+
+<hr class="border-white/10 my-6">
+
+<h3 class="text-xl font-bold mb-4">
+Gallery Images
+</h3>
+
+<input
+type="file"
+id="galleryFiles"
+multiple
+class="mb-3">
+
+<button
+onclick="uploadGallery()"
+class="bg-purple-600 w-full py-3 rounded-xl mb-4">
+
+Upload Gallery Images
+
+</button>
+
+<div
+id="galleryPreview"
+class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+
+</div>
+
+<textarea
+id="gallery"
+placeholder="Gallery URLs (Auto Filled)"
+class="w-full h-32 p-3 rounded bg-white/10"></textarea>
+
+<h3 class="text-xl font-bold mb-4">
+Tour Itinerary
+</h3>
+
+<textarea
+id="itinerary"
+placeholder="Example:
+
+Temple of Tooth|Visit the sacred temple
+
+Kandy Lake|Relax beside the lake
+
+Tea Factory|Learn how Ceylon Tea is produced"
+class="w-full h-56 p-3 rounded bg-white/10"></textarea>
+  
+<button
+onclick="saveTour()"
+class="bg-white text-black font-bold w-full py-3 rounded-xl mt-5">
+
+Save Tour
+
+</button>
+
+</div>
+
+<!-- TOUR LIST -->
+
+<div
+id="list"
+class="space-y-4">
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+
+getFirestore,
+collection,
+addDoc,
+getDocs,
+getDoc,
+deleteDoc,
+doc,
+setDoc,
+
+query,
+orderBy,
+updateDoc,
+where
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+
+getAuth,
+signOut,
+onAuthStateChanged
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const app=initializeApp({
+
+apiKey:"AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
+authDomain:"voyo-lanka.firebaseapp.com",
+projectId:"voyo-lanka"
+
+});
+
+  emailjs.init("2zzy0wtyn_4qdRVf_");
+
+const db=getFirestore(app);
+const auth=getAuth(app);
+
+let imageURL="";
+  let galleryImages=[];
+
+const $=(id)=>document.getElementById(id);
+
+onAuthStateChanged(auth,user=>{
+
+if(!user){
+
+location.replace("index.html");
+
+}
+
+});
+
+history.pushState(null,"",location.href);
+
+onpopstate=()=>location.replace("index.html");
+
+  /* RESET FORM */
+
+window.newTour=()=>{
+
+$("docId").value="";
+$("title").value="";
+$("description").value="";
+$("category").value="Day Tour";
+$("price").value="";
+$("slug").value="";
+$("area").value="";
+$("routeFrom").value="";
+$("routeTo").value="";
+$("tourType").value="single";
+  $("about").value="";
+
+$("duration").value="";
+
+$("location").value="";
+
+$("map").value="";
+
+$("highlights").value="";
+
+$("includes").value="";
+
+$("excludes").value="";
+
+$("gallery").value="";
+
+$("itinerary").value="";
+
+imageURL="";
+
+$("status").innerText="";
+
+$("previewImg").classList.add("hidden");
+$("noPreview").style.display="block";
+
+  galleryImages=[];
+
+$("galleryPreview").innerHTML="";
+
+};
+
+/* CLOUDINARY */
+
+window.uploadImage=async()=>{
+
+const file=$("imageFile").files[0];
+
+if(!file){
+alert("Select an image.");
+return;
+}
+
+
+  
+
+const fd=new FormData();
+
+fd.append("file",file);
+fd.append("upload_preset","tour_upload");
+
+try{
+
+const res=await fetch(
+"https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
+{
+method:"POST",
+body:fd
+});
+
+const data=await res.json();
+
+imageURL=data.secure_url;
+
+$("previewImg").src=imageURL;
+$("previewImg").classList.remove("hidden");
+$("noPreview").style.display="none";
+
+$("status").innerText="Image Uploaded ✔";
+
+}catch(e){
+
+alert("Upload failed.");
+
+}
+
+};
+
+  /* ================= GALLERY UPLOAD ================= */
+
+window.uploadGallery = async () => {
+
+    const files = $("galleryFiles").files;
+
+    if (files.length === 0) {
+        alert("Please select gallery images.");
+        return;
+    }
+
+    galleryImages = [];
+
+    $("galleryPreview").innerHTML = "";
+
+    for (const file of files) {
+
+        const fd = new FormData();
+
+        fd.append("file", file);
+        fd.append("upload_preset", "tour_upload");
+
+        try {
+
+            const res = await fetch(
+                "https://api.cloudinary.com/v1_1/dtbxzd7ux/image/upload",
+                {
+                    method: "POST",
+                    body: fd
+                }
+            );
+
+            const data = await res.json();
+
+     galleryImages.push(data.secure_url);
+
+renderGallery();
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert("One image failed to upload.");
+
+        }
+
+    }
+
+    $("gallery").value = galleryImages.join("\n");
+
+    $("status").innerText = "✅ Gallery Uploaded";
+
+};
+
+  window.removeGalleryImage = (index) => {
+
+    if(!confirm("Remove this image?")) return;
+
+    galleryImages.splice(index,1);
+
+  renderGallery();
+
+    renderGallery();
+
+};
+
+  function renderGallery(){
+
+    $("galleryPreview").innerHTML = "";
+
+    galleryImages.forEach((img,index)=>{
+
+        $("galleryPreview").innerHTML += `
+
+        <div class="relative">
+
+            <img
+                src="${img}"
+                class="rounded-xl h-24 w-full object-cover">
+
+            <button
+                onclick="removeGalleryImage(${index})"
+                class="absolute top-1 right-1 bg-red-600 text-white w-6 h-6 rounded-full text-sm">
+
+                ✕
+
+            </button>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+/* SAVE TOUR */
+
+window.saveTour=async()=>{
+
+const data={
+
+title:$("title").value,
+description:$("description").value,
+category:$("category").value,
+price:Number($("price").value),
+
+slug:$("slug").value,
+
+image:imageURL,
+
+area:$("area").value,
+
+tourType:$("tourType").value,
+
+routeFrom:$("routeFrom").value,
+
+routeTo:$("routeTo").value,
+
+about:$("about").value,
+
+duration:$("duration").value,
+
+location:$("location").value,
+
+map:$("map").value,
+
+highlights:$("highlights").value
+.split("\n")
+.filter(x=>x.trim()!=""),
+
+includes:$("includes").value
+.split("\n")
+.filter(x=>x.trim()!=""),
+
+excludes:$("excludes").value
+.split("\n")
+.filter(x=>x.trim()!=""),
+
+gallery:galleryImages.length
+?galleryImages
+:$("gallery").value
+.split("\n")
+.filter(x=>x.trim()!=""),
+
+itinerary:$("itinerary").value
+.split("\n")
+.filter(x=>x.trim()!="")
+.map(line=>{
+
+const parts=line.split("|");
+
+return{
+
+title:parts[0]||"",
+
+description:parts[1]||""
+
+};
+
+})
+
+};
+const id=$("docId").value;
+
+try{
+
+if(id){
+
+await setDoc(
+doc(db,"tour",id),
+data,
+{merge:true}
+);
+
+}else{
+
+await addDoc(
+collection(db,"tour"),
+data
+);
+
+}
+
+newTour();
+
+loadTours();
+
+}catch(e){
+
+console.error(e);
+
+alert("Save failed");
+
+}
+
+};
+
+/* LOAD TOURS */
+
+async function loadTours(){
+
+list.innerHTML="";
+
+const snap=await getDocs(collection(db,"tour"));
+
+const tours=[];
+
+snap.forEach(d=>{
+
+tours.push({
+
+id:d.id,
+
+...d.data()
+
+});
+
+});
+
+totalTours.innerText=tours.length;
+
+recentTours.innerHTML="";
+
+tours.slice(-6).reverse().forEach(t=>{
+
+recentTours.innerHTML+=`
+
+<div class="glass p-3 rounded-xl">
+
+<img
+src="${t.image||""}"
+class="h-40 md:h-28 w-full object-cover rounded mb-3">
+
+<b>${t.title}</b>
+
+<p class="text-sm text-white/60">
+
+${t.category}
+
+</p>
+
+</div>
+
+`;
+
+});
+
+tours.reverse().forEach(t=>{
+
+list.innerHTML+=`
+
+<div class="glass p-4 rounded-xl">
+
+<img
+src="${t.image||""}"
+class="w-full h-52 md:h-40 rounded object-cover">
+
+<h2 class="font-bold mt-3">
+
+${t.title}
+
+</h2>
+
+<p class="text-white/60">
+
+$${t.price}
+
+</p>
+
+<div class="flex flex-col sm:flex-row gap-3 mt-4">
+
+<button
+class="bg-blue-600 px-4 py-2 rounded"
+onclick="editTour('${t.id}')">
+
+Edit
+
+</button>
+
+<button
+class="bg-red-600 px-4 py-2 rounded"
+onclick="deleteTour('${t.id}')">
+
+Delete
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+  /* DELETE TOUR */
+
+window.deleteTour = async(id)=>{
+
+if(!confirm("Delete this tour?")) return;
+
+await deleteDoc(doc(db,"tour",id));
+
+loadTours();
+
+};
+
+/* EDIT TOUR */
+
+window.editTour = async(id)=>{
+
+    const snap = await getDoc(doc(db,"tour",id));
+
+    if(!snap.exists()){
+        alert("Tour not found.");
+        return;
+    }
+
+    const t = snap.data();
+
+    $("docId").value = id;
+    $("title").value = t.title || "";
+    $("description").value = t.description || "";
+    $("slug").value = t.slug || "";
+    $("category").value = t.category || "Day Tour";
+    $("price").value = t.price || "";
+    $("area").value = t.area || "";
+    $("tourType").value = t.tourType || "single";
+    $("routeFrom").value = t.routeFrom || "";
+    $("routeTo").value = t.routeTo || "";
+  $("about").value = t.about || "";
+
+$("duration").value = t.duration || "";
+
+$("location").value = t.location || "";
+
+$("map").value = t.map || "";
+
+$("highlights").value = (t.highlights || []).join("\n");
+
+$("includes").value = (t.includes || []).join("\n");
+
+$("excludes").value = (t.excludes || []).join("\n");
+
+$("gallery").value = (t.gallery || []).join("\n");
+galleryImages = t.gallery || [];
+
+renderGallery();
+$("itinerary").value = (t.itinerary || [])
+.map(i => `${i.title}|${i.description}`)
+.join("\n");
+
+    imageURL = t.image || "";
+
+    if(imageURL){
+
+        $("previewImg").src = imageURL;
+        $("previewImg").classList.remove("hidden");
+        $("noPreview").style.display = "none";
+
+    }else{
+
+        $("previewImg").classList.add("hidden");
+        $("noPreview").style.display = "block";
+
+    }
+
+    showSection("tours");
+
+};
+/* LOAD BOOKINGS */
+
+async function loadBookings(){
+
+const bookingList=$("bookingList");
+
+bookingList.innerHTML="Loading...";
+
+try{
+
+const q = query(
+    collection(db,"payments"),
+    where("status","==","Pending Approval"),
+    orderBy("createdAt","desc")
+);
+  
+const snap=await getDocs(q);
+
+bookingList.innerHTML="";
+
+if(snap.empty){
+
+bookingList.innerHTML=`
+<div class="glass p-6 rounded-xl">
+No booking requests yet.
+</div>
+`;
+
+return;
+
+}
+
+snap.forEach(docSnap=>{
+
+const p = docSnap.data();
+
+bookingList.innerHTML += `
+
+<div class="glass rounded-2xl p-6">
+
+<div class="flex flex-col md:flex-row justify-between items-start gap-5">
+
+<div>
+
+<h2 class="text-2xl font-bold">
+${p.name}
+</h2>
+
+<p class="text-white/60 mt-1">
+Reference:
+<b>${p.bookingReference || p.bookingID}</b>
+</p>
+
+<p class="mt-3">
+🧳 ${p.tour}
+</p>
+
+<p>
+📧 ${p.email}
+</p>
+
+<p>
+💰 $${p.amount}
+</p>
+
+<p>
+💳 ${p.paymentMethod}
+</p>
+
+<p>
+📅 ${p.travelDate || "-"}
+</p>
+
+</div>
+
+<div>
+
+<span class="bg-yellow-500 text-black px-4 py-2 rounded-xl">
+
+${p.status}
+
+</span>
+
+</div>
+
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+
+<button
+onclick="viewReceipt('${p.receiptURL}')"
+class="bg-blue-600 px-5 py-2 rounded-xl">
+
+👁 View Receipt
+
+</button>
+
+<button
+onclick="approvePayment('${docSnap.id}')"
+class="bg-green-600 px-5 py-2 rounded-xl">
+
+✅ Approve
+
+</button>
+
+<button
+onclick="rejectPayment('${docSnap.id}')"
+class="bg-red-600 px-5 py-2 rounded-xl">
+
+❌ Reject
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+  
+
+}catch(err){
+
+console.error("LOAD BOOKINGS ERROR:", err);
+
+alert(err.message);
+
+bookingList.innerHTML = err.message;
+
+}
+
+}
+
+
+window.viewReceipt = function(url){
+    window.open(url, "_blank");
+}
+window.approvePayment = async(id)=>{
+
+try{
+
+// Read payment document
+const paymentRef = doc(db,"payments",id);
+
+const paymentSnap = await getDoc(paymentRef);
+
+if(!paymentSnap.exists()){
+
+alert("Payment not found.");
+
+return;
+
+}
+
+const payment = paymentSnap.data();
+
+
+// Create booking
+
+await setDoc(
+
+doc(db,"bookings",id),
+
+{
+
+...payment,
+
+status:"Confirmed",
+
+paymentStatus:"Paid",
+
+  paymentApproved:true,
+
+approvedAt:new Date()
+
+}
+
+);
+
+
+// Update payment status
+
+await updateDoc(
+
+paymentRef,
+
+{
+
+status:"Approved",
+  
+approvedAt:new Date(),
+  bookingCreated:new Date()
+
+}
+
+);
+
+  await emailjs.send(
+"service_i35yoq6",
+"template_qkbxxvs",
+{
+    name: payment.name,
+    email: payment.email,
+    bookingReference: payment.bookingReference || payment.bookingID,
+    tour: payment.tour,
+    travelDate: payment.travelDate,
+    amount: payment.amount,
+    year: new Date().getFullYear()
+});
+
+alert("✅ Booking confirmed successfully.");
+
+loadBookings();
+
+}catch(err){
+
+console.error(err);
+
+alert("Approval failed.");
+
+}
+
+};
+
+
+ let rejectPaymentId = null;
+
+window.rejectPayment = function(id){
+
+    rejectPaymentId = id;
+
+    $("rejectReason").value = "";
+
+    $("rejectModal").classList.remove("hidden");
+    $("rejectModal").classList.add("flex");
+
+};
+
+window.closeRejectModal = function(){
+
+    $("rejectModal").classList.remove("flex");
+    $("rejectModal").classList.add("hidden");
+
+};
+
+window.confirmReject = async function(){
+
+    const reason = $("rejectReason").value.trim();
+
+    if(!reason){
+
+        alert("Please enter a rejection reason.");
+
+        return;
+
+    }
+
+    try{
+
+        const paymentRef = doc(db,"payments",rejectPaymentId);
+
+        const paymentSnap = await getDoc(paymentRef);
+
+        if(!paymentSnap.exists()){
+
+            alert("Payment not found.");
+
+            return;
+
+        }
+
+        const payment = paymentSnap.data();
+
+        await updateDoc(paymentRef,{
+
+            status:"Rejected",
+
+            rejectionReason:reason,
+
+            rejectedAt:new Date()
+
+        });
+
+        await emailjs.send(
+            "service_i35yoq6",
+            "template_hkj5bt3",
+            {
+                name: payment.name,
+                email: payment.email,
+                bookingReference: payment.bookingReference || payment.bookingID,
+                tour: payment.tour,
+                travelDate: payment.travelDate,
+                amount: payment.amount,
+                reason: reason,
+                year: new Date().getFullYear()
+            }
+        );
+
+        closeRejectModal();
+
+        alert("❌ Payment rejected.");
+
+        loadBookings();
+
+    }catch(err){
+
+        console.error(err);
+
+        alert("Failed.");
+
+    }
+
+};
+/* SHOW SECTIONS */
+
+window.showSection=(section)=>{
+
+$("dashboardSection").classList.add("hidden");
+$("toursSection").classList.add("hidden");
+$("bookingsSection").classList.add("hidden");
+
+if(section==="dashboard"){
+
+$("dashboardSection").classList.remove("hidden");
+
+}
+
+if(section==="tours"){
+
+$("toursSection").classList.remove("hidden");
+
+}
+
+if(section==="bookings"){
+
+$("bookingsSection").classList.remove("hidden");
+
+loadBookings();
+
+}
+
+};
+
+/* LOGOUT */
+
+window.logout=async()=>{
+
+await signOut(auth);
+
+location.replace("index.html");
+
+};
+
+/* INITIAL LOAD */
+
+loadTours();
+
+</script>
+<div id="rejectModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+
+   <div class="glass p-6 rounded-2xl w-[95%] md:w-[500px]">
+
+        <h2 class="text-2xl font-bold mb-4">
+            Reject Payment
+        </h2>
+
+        <p class="text-white/70 mb-3">
+            Please enter the reason for rejecting this payment.
+        </p>
+
+        <textarea
+            id="rejectReason"
+            class="w-full h-40 p-3 rounded bg-white/10 border border-white/20"
+            placeholder="Type rejection reason..."></textarea>
+
+        <div class="flex justify-end gap-3 mt-5">
+
+            <button
+                onclick="closeRejectModal()"
+                class="bg-gray-600 px-5 py-2 rounded">
+                Cancel
+            </button>
+
+            <button
+                onclick="confirmReject()"
+                class="bg-red-600 px-5 py-2 rounded">
+                Reject Payment
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+</body>
+</html>
