@@ -52,6 +52,10 @@ Voyo-Lanka
 📅 Customer Bookings
 </button>
 
+  <button onclick="showSection('confirmed')" class="block w-full text-left mb-3">
+✅ Confirmed Bookings
+</button>
+  
 <hr class="border-white/10 my-5">
 
 <button onclick="logout()" class="bg-red-600 w-full py-2 rounded-xl">
@@ -118,6 +122,22 @@ class="hidden">
 <div
 id="bookingList"
 class="space-y-5">
+
+Loading...
+
+</div>
+
+</div>
+
+  <!-- CONFIRMED BOOKINGS -->
+
+<div id="confirmedSection" class="hidden">
+
+<h2 class="text-3xl font-black mb-6">
+✅ Confirmed Bookings
+</h2>
+
+<div id="confirmedList" class="space-y-5">
 
 Loading...
 
@@ -767,6 +787,121 @@ window.viewReceipt = function(url){
     window.open(url, "_blank");
 }
 
+  async function loadConfirmedBookings(){
+
+const box=$("confirmedList");
+
+box.innerHTML="Loading...";
+
+
+const q=query(
+collection(db,"bookings"),
+where("status","==","Confirmed"),
+orderBy("approvedAt","desc")
+);
+
+
+const snap=await getDocs(q);
+
+
+box.innerHTML="";
+
+
+if(snap.empty){
+
+box.innerHTML=`
+<div class="glass p-6 rounded-xl">
+No confirmed bookings.
+</div>
+`;
+
+return;
+
+}
+
+
+snap.forEach(docSnap=>{
+
+
+const b=docSnap.data();
+
+
+box.innerHTML+=`
+
+<div class="glass rounded-2xl p-6">
+
+
+<h2 class="text-2xl font-bold">
+${b.name}
+</h2>
+
+
+<p>
+📧 ${b.email}
+</p>
+
+
+<p>
+🧳 ${b.tour}
+</p>
+
+
+<p>
+📅 ${b.travelDate || "-"}
+</p>
+
+
+<p>
+💰 USD ${b.amount}
+</p>
+
+
+<p>
+💳 ${b.paymentMethod}
+</p>
+
+
+<p>
+Reference:
+<b>${b.bookingReference || b.bookingID}</b>
+</p>
+
+
+<div class="mt-5 flex gap-3">
+
+
+<a 
+href="${b.invoiceURL || '#'}"
+target="_blank"
+class="bg-blue-600 px-5 py-2 rounded-xl">
+
+📄 View Invoice
+
+</a>
+
+
+<button
+onclick="viewReceipt('${b.receiptURL}')"
+class="bg-purple-600 px-5 py-2 rounded-xl">
+
+🧾 Receipt
+
+</button>
+
+
+</div>
+
+
+</div>
+
+
+`;
+
+});
+
+
+}
+
  async function createInvoice(payment){
 
 const { jsPDF } = window.jspdf;
@@ -875,11 +1010,11 @@ const payment = paymentSnap.data();
 
 
 // Create booking
+const invoiceURL = await createInvoice(payment);
+
 
 await setDoc(
-
 doc(db,"bookings",id),
-
 {
 
 ...payment,
@@ -888,14 +1023,14 @@ status:"Confirmed",
 
 paymentStatus:"Paid",
 
-  paymentApproved:true,
+paymentApproved:true,
+
+invoiceURL:invoiceURL,
 
 approvedAt:new Date()
 
 }
-
 );
-
 
 // Update payment status
 
@@ -914,7 +1049,7 @@ approvedAt:new Date(),
 
 );
 
-const invoiceURL = await createInvoice(payment);
+
 
 
 await emailjs.send(
@@ -1042,7 +1177,15 @@ window.showSection=(section)=>{
 $("dashboardSection").classList.add("hidden");
 $("toursSection").classList.add("hidden");
 $("bookingsSection").classList.add("hidden");
+$("confirmedSection").classList.add("hidden");
 
+  if(section==="confirmed"){
+
+$("confirmedSection").classList.remove("hidden");
+
+loadConfirmedBookings();
+
+}
 if(section==="dashboard"){
 
 $("dashboardSection").classList.remove("hidden");
