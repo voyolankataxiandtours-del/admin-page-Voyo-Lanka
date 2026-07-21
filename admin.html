@@ -767,27 +767,16 @@ window.viewReceipt = function(url){
     window.open(url, "_blank");
 }
 
-  async function createInvoice(payment){
+ async function createInvoice(payment){
 
 const { jsPDF } = window.jspdf;
 
 const pdf = new jsPDF();
 
-
-const invoiceNumber =
-"INV-" + Date.now();
+const invoiceNumber="INV-"+Date.now();
 
 
-pdf.setFontSize(22);
-
-pdf.text(
-"VOYO LANKA",
-20,
-30
-);
-
-
-pdf.setFontSize(14);
+pdf.text("VOYO LANKA",20,30);
 
 pdf.text(
 "Booking Confirmation Invoice",
@@ -796,54 +785,35 @@ pdf.text(
 );
 
 
+pdf.text(
 let y = 70;
 
-
 const details=[
-
-"Invoice Number: " + invoiceNumber,
-
-"Booking Reference: " + (payment.bookingReference || payment.bookingID),
-
-"Customer: " + payment.name,
-
-"Email: " + payment.email,
-
-"Tour: " + payment.tour,
-
-"Travel Date: " + (payment.travelDate || "-"),
-
-"Payment Method: " + payment.paymentMethod,
-
-"Amount Paid: USD " + payment.amount
-
+"Invoice Number: "+invoiceNumber,
+"Booking Reference: "+(payment.bookingReference || payment.bookingID),
+"Customer: "+payment.name,
+"Email: "+payment.email,
+"Tour: "+payment.tour,
+"Travel Date: "+(payment.travelDate || "-"),
+"Payment Method: "+payment.paymentMethod,
+"Amount Paid: USD "+payment.amount
 ];
 
 
-details.forEach(text=>{
+details.forEach(line=>{
 
-pdf.text(text,20,y);
+pdf.text(line,20,y);
 
 y += 12;
 
 });
 
 
-pdf.text(
-"Thank you for choosing Voyo Lanka!",
-20,
-150
-);
-
-
-// Convert PDF
-
 const pdfBlob = pdf.output("blob");
 
 
-// Upload to Cloudinary
-
 const formData = new FormData();
+
 
 formData.append(
 "file",
@@ -853,8 +823,8 @@ invoiceNumber+".pdf"
 
 
 formData.append(
-"Invoice",
-"voyo_invoices"
+"upload_preset",
+"voyo_invoice"
 );
 
 
@@ -864,22 +834,27 @@ const upload = await fetch(
 "https://api.cloudinary.com/v1_1/dtbxzd7ux/raw/upload",
 
 {
-
 method:"POST",
-
 body:formData
-
 }
 
 );
 
 
-
 const data = await upload.json();
 
 
-return data.secure_url;
+console.log(data);
 
+
+if(!data.secure_url){
+
+throw new Error(data.error.message);
+
+}
+
+
+return data.secure_url;
 
 }
 window.approvePayment = async(id)=>{
@@ -966,9 +941,9 @@ loadBookings();
 
 }catch(err){
 
-console.error(err);
+console.error("APPROVAL ERROR:",err);
 
-alert("Approval failed.");
+alert(err.message);
 
 }
 
