@@ -5,6 +5,7 @@
 <title>Voyo-Lanka Admin Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 body{
@@ -388,6 +389,15 @@ where
 
 import {
 
+getStorage,
+ref,
+uploadBytes,
+getDownloadURL
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+  
+import {
+
 getAuth,
 signOut,
 onAuthStateChanged
@@ -403,9 +413,9 @@ projectId:"voyo-lanka"
 });
 
   emailjs.init("2zzy0wtyn_4qdRVf_");
-
 const db=getFirestore(app);
 const auth=getAuth(app);
+const storage=getStorage(app);
 
 let imageURL="";
   let galleryImages=[];
@@ -765,6 +775,116 @@ bookingList.innerHTML = err.message;
 window.viewReceipt = function(url){
     window.open(url, "_blank");
 }
+
+  async function createInvoice(payment){
+
+const { jsPDF } = window.jspdf;
+
+const pdf = new jsPDF();
+
+
+const invoiceNumber =
+"INV-" + Date.now();
+
+
+pdf.setFontSize(22);
+
+pdf.text(
+"VOYO LANKA",
+20,
+30
+);
+
+
+pdf.setFontSize(14);
+
+pdf.text(
+"Booking Confirmation Invoice",
+20,
+45
+);
+
+
+pdf.setFontSize(12);
+
+
+let y = 70;
+
+
+const details=[
+
+"Invoice Number: " + invoiceNumber,
+
+"Booking Reference: " + (payment.bookingReference || payment.bookingID),
+
+"Customer: " + payment.name,
+
+"Email: " + payment.email,
+
+"Tour: " + payment.tour,
+
+"Travel Date: " + (payment.travelDate || "-"),
+
+"Payment Method: " + payment.paymentMethod,
+
+"Amount Paid: USD " + payment.amount
+
+];
+
+
+details.forEach(text=>{
+
+pdf.text(text,20,y);
+
+y += 12;
+
+});
+
+
+const blob = pdf.output("blob");
+
+
+const fileRef = ref(
+storage,
+"invoices/"+invoiceNumber+".pdf"
+);
+
+
+await uploadBytes(
+fileRef,
+blob
+);
+
+
+const url = await getDownloadURL(fileRef);
+
+
+
+await setDoc(
+doc(db,"invoices",invoiceNumber),
+{
+
+invoiceNumber:invoiceNumber,
+
+bookingReference:
+payment.bookingReference || payment.bookingID,
+
+name:payment.name,
+
+email:payment.email,
+
+pdfURL:url,
+
+createdAt:new Date()
+
+}
+
+);
+
+
+return url;
+
+}
 window.approvePayment = async(id)=>{
 
 try{
@@ -825,7 +945,10 @@ approvedAt:new Date(),
 
 );
 
-  await emailjs.send(
+const invoiceURL = await createInvoice(payment);
+
+
+await emailjs.send(
 "service_i35yoq6",
 "template_qkbxxvs",
 {
@@ -835,6 +958,8 @@ approvedAt:new Date(),
     tour: payment.tour,
     travelDate: payment.travelDate,
     amount: payment.amount,
+    paymentMethod: payment.paymentMethod,
+    invoiceURL: invoiceURL,
     year: new Date().getFullYear()
 });
 
