@@ -785,7 +785,6 @@ pdf.text(
 );
 
 
-pdf.text(
 let y = 70;
 
 const details=[
@@ -798,8 +797,6 @@ const details=[
 "Payment Method: "+payment.paymentMethod,
 "Amount Paid: USD "+payment.amount
 ];
-
-
 details.forEach(line=>{
 
 pdf.text(line,20,y);
