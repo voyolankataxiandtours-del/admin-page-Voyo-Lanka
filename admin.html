@@ -387,15 +387,7 @@ where
 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
 
-getStorage,
-ref,
-uploadBytes,
-getDownloadURL
-
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-  
 import {
 
 getAuth,
@@ -410,14 +402,11 @@ apiKey:"AIzaSyC_2vLQDidqZ1VHFr77TnNgktRgWbkMKBY",
 authDomain:"voyo-lanka.firebaseapp.com",
 projectId:"voyo-lanka",
 
-  storageBucket: "voyo-lanka.firebasestorage.app"
-
 });
 
   emailjs.init("2zzy0wtyn_4qdRVf_");
 const db=getFirestore(app);
 const auth=getAuth(app);
-const storage=getStorage(app);
 
 let imageURL="";
   let galleryImages=[];
@@ -807,9 +796,6 @@ pdf.text(
 );
 
 
-pdf.setFontSize(12);
-
-
 let y = 70;
 
 
@@ -843,48 +829,57 @@ y += 12;
 });
 
 
-const blob = pdf.output("blob");
-
-
-const fileRef = ref(
-storage,
-"invoices/"+invoiceNumber+".pdf"
+pdf.text(
+"Thank you for choosing Voyo Lanka!",
+20,
+150
 );
 
 
-await uploadBytes(
-fileRef,
-blob
+// Convert PDF
+
+const pdfBlob = pdf.output("blob");
+
+
+// Upload to Cloudinary
+
+const formData = new FormData();
+
+formData.append(
+"file",
+pdfBlob,
+invoiceNumber+".pdf"
 );
 
 
-const url = await getDownloadURL(fileRef);
+formData.append(
+"Invoice",
+"voyo_invoices"
+);
 
 
 
-await setDoc(
-doc(db,"invoices",invoiceNumber),
+const upload = await fetch(
+
+"https://api.cloudinary.com/v1_1/dtbxzd7ux/raw/upload",
+
 {
 
-invoiceNumber:invoiceNumber,
+method:"POST",
 
-bookingReference:
-payment.bookingReference || payment.bookingID,
-
-name:payment.name,
-
-email:payment.email,
-
-pdfURL:url,
-
-createdAt:new Date()
+body:formData
 
 }
 
 );
 
 
-return url;
+
+const data = await upload.json();
+
+
+return data.secure_url;
+
 
 }
 window.approvePayment = async(id)=>{
