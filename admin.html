@@ -830,10 +830,17 @@ box.innerHTML+=`
 
 <div class="glass rounded-2xl p-6">
 
-
-<h2 class="text-2xl font-bold">
+<h2 class="text-3xl font-black">
 ${b.name}
 </h2>
+
+
+<div class="space-y-2 mt-4">
+
+
+<p>
+📞 ${b.phone || "-"}
+</p>
 
 
 <p>
@@ -841,30 +848,104 @@ ${b.name}
 </p>
 
 
+<hr class="border-white/20 my-4">
+
+
 <p>
-🧳 ${b.tour}
+🚐 Tour:
+<b>${b.tour}</b>
 </p>
 
 
 <p>
-📅 ${b.travelDate || "-"}
+📅 Date:
+<b>${b.travelDate || "-"}</b>
 </p>
 
 
 <p>
-💰 USD ${b.amount}
+⏰ Pickup Time:
+<b>${b.pickupTime || "-"}</b>
 </p>
 
 
 <p>
-💳 ${b.paymentMethod}
+🚖 Pickup Type:
+<b>${b.pickupType || "-"}</b>
 </p>
 
 
 <p>
+📍 Pickup:
+<b>${b.pickupLocation || "-"}</b>
+</p>
+
+
+
+${b.latitude ? `
+
+<a 
+target="_blank"
+href="https://www.google.com/maps?q=${b.latitude},${b.longitude}"
+class="inline-block bg-blue-600 px-5 py-3 rounded-xl mt-3">
+
+📍 Open Pickup Location
+
+</a>
+
+`:''}
+
+
+
+<hr class="border-white/20 my-4">
+
+
+<p>
+👥 Passengers:
+</p>
+
+<div class="text-white/70">
+${(b.peopleNames || []).join("<br>")}
+</div>
+
+
+
+<hr class="border-white/20 my-4">
+
+
+<p>
+💰 Total Price:
+<b>
+USD ${b.total || 0}
+</b>
+</p>
+
+
+<p>
+💵 Paid:
+<b class="text-green-400">
+USD ${b.amountPaid || b.amount}
+</b>
+</p>
+
+
+<p>
+💳 Remaining:
+<b class="text-yellow-400">
+USD ${b.remaining || 0}
+</b>
+</p>
+
+
+<p class="mt-3">
 Reference:
-<b>${b.bookingReference || b.bookingID}</b>
+<b>
+${b.bookingReference || b.bookingID}
+</b>
 </p>
+
+
+</div>
 
 
 <div class="mt-5 flex gap-3">
@@ -875,7 +956,7 @@ href="${b.invoiceURL || '#'}"
 target="_blank"
 class="bg-blue-600 px-5 py-2 rounded-xl">
 
-📄 View Invoice
+📄 Invoice
 
 </a>
 
@@ -893,7 +974,6 @@ class="bg-purple-600 px-5 py-2 rounded-xl">
 
 
 </div>
-
 
 `;
 
@@ -1019,6 +1099,43 @@ doc(db,"bookings",id),
 
 ...payment,
 
+
+// CUSTOMER DETAILS
+name: payment.name,
+email: payment.email,
+phone: payment.phone || "",
+
+
+// TOUR DETAILS
+tour: payment.tour,
+travelDate: payment.travelDate,
+pickupTime: payment.pickupTime,
+pickupType: payment.pickupType,
+
+
+// PEOPLE
+peopleNames: payment.peopleNames || [],
+
+
+// LOCATION
+pickupLocation: payment.pickupLocation || "",
+latitude: payment.latitude || null,
+longitude: payment.longitude || null,
+
+
+// PAYMENT
+total: payment.total,
+amountPaid: payment.amount,
+
+remaining:
+(payment.total || 0) - (payment.amount || 0),
+
+
+paymentMethod: payment.paymentMethod,
+
+
+
+// STATUS
 status:"Confirmed",
 
 paymentStatus:"Paid",
