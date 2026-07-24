@@ -721,6 +721,36 @@ Reference:
 📅 ${p.travelDate || "-"}
 </p>
 
+<p>
+⏰ Pickup Time:
+${p.pickupTime || "-"}
+</p>
+
+<p>
+🚖 Pickup Type:
+${p.pickupType || "-"}
+</p>
+
+<p>
+📍 Pickup Location:
+${p.pickupLocation || "-"}
+</p>
+
+
+${p.latitude && p.longitude ? `
+
+<a
+href="https://www.google.com/maps?q=${p.latitude},${p.longitude}"
+target="_blank"
+class="inline-block mt-3 bg-blue-600 px-5 py-2 rounded-xl">
+
+📍 Open Pickup Map
+
+</a>
+
+` : ""}
+
+
 </div>
 
 <div>
